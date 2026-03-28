@@ -65,3 +65,21 @@
 ### 结果
 - 射击频率控制从具体敌机类抽离到通用基类，后续接入难度系统时可直接复用。
 - 编译检查通过：`javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`。
+
+## 2026-03-28 英雄机与敌机射击参数解耦
+
+### 目的
+- 为后续难度系统提供独立控制维度，分别调整“英雄输出节奏”和“敌机压制节奏”。
+
+### 修改内容
+- `Game` 将原单一 `shootCycle` 拆分为：
+  - `heroShootCycle` / `heroShootCounter`
+  - `enemyShootCycle` / `enemyShootCounter`
+- `shootAction()` 改为分别判断英雄和敌机射击时机。
+- 新增接口：
+  - `setHeroShootCycle(double)`
+  - `setEnemyShootCycle(double)`
+
+### 兼容性
+- 仍保留敌机侧通用频率控制：`AbstractAircraft.canShootNow()` + `setShootCycleFactor(double)`。
+- 当前形成两层控制：敌机全局节拍（Game） + 敌机个体/难度倍率（Aircraft）。

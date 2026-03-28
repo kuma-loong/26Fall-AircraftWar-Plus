@@ -37,9 +37,12 @@ public class Game extends JPanel {
     protected double enemySpawnCycle  =  20;
     private int enemySpawnCounter = 0;
 
-    //英雄机和敌机射击周期
-    protected double shootCycle = 20;
-    private int shootCounter = 0;
+    //英雄机射击周期
+    protected double heroShootCycle = 20;
+    private int heroShootCounter = 0;
+    //敌机射击周期（全局节拍）
+    protected double enemyShootCycle = 20;
+    private int enemyShootCounter = 0;
     /**
      * 敌机射击周期倍率：>1 更慢，<1 更快。
      */
@@ -130,11 +133,16 @@ public class Game extends JPanel {
     //***********************
 
     private void shootAction() {
-        shootCounter++;
-        if (shootCounter >= shootCycle) {
-            shootCounter = 0;
-            //英雄机射击
+        heroShootCounter++;
+        enemyShootCounter++;
+
+        if (heroShootCounter >= heroShootCycle) {
+            heroShootCounter = 0;
             heroBullets.addAll(heroAircraft.shoot());
+        }
+
+        if (enemyShootCounter >= enemyShootCycle) {
+            enemyShootCounter = 0;
             for (AbstractAircraft enemyAircraft : enemyAircrafts) {
                 if (enemyAircraft.canShootNow()) {
                     enemyBullets.addAll(enemyAircraft.shoot());
@@ -348,6 +356,30 @@ public class Game extends JPanel {
 
     private void applyEnemyShootCycleFactor(AbstractAircraft enemyAircraft) {
         enemyAircraft.setShootCycleFactor(enemyShootCycleFactor);
+    }
+
+    /**
+     * 设置英雄机全局射击周期。
+     * @param heroShootCycle >0；值越大射击越慢
+     */
+    public void setHeroShootCycle(double heroShootCycle) {
+        if (heroShootCycle <= 0) {
+            return;
+        }
+        this.heroShootCycle = heroShootCycle;
+        this.heroShootCounter = 0;
+    }
+
+    /**
+     * 设置敌机全局射击周期。
+     * @param enemyShootCycle >0；值越大射击越慢
+     */
+    public void setEnemyShootCycle(double enemyShootCycle) {
+        if (enemyShootCycle <= 0) {
+            return;
+        }
+        this.enemyShootCycle = enemyShootCycle;
+        this.enemyShootCounter = 0;
     }
 
 }
