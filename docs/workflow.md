@@ -83,3 +83,20 @@
 ### 兼容性
 - 仍保留敌机侧通用频率控制：`AbstractAircraft.canShootNow()` + `setShootCycleFactor(double)`。
 - 当前形成两层控制：敌机全局节拍（Game） + 敌机个体/难度倍率（Aircraft）。
+
+## 2026-03-28 实验一 UML 同步与教程编写
+
+### 修改内容
+- 更新 `uml/Inheritence.puml`：
+  - 同步实验一新增敌机与道具体系；
+  - 同步 `HeroAircraft` 的 DCL 单例关键成员（私有构造、静态实例、`getInstance()`）；
+  - 增加 `Game` 对飞机/子弹/道具的依赖关系；
+  - 追加单独页面描述单例结构图。
+- 新增 `docs/feature/uml-tutorial.md`：
+  - PlantUML 语法速查；
+  - 本项目实验一 UML 同步清单；
+  - 常见错误与推荐流程。
+
+### 结果
+- 实验一 UML 范围已补全。
+- 提供可复用的项目内 UML 维护教程。
