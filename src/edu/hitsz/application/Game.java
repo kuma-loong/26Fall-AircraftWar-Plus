@@ -8,10 +8,8 @@ import edu.hitsz.item.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Timer;
-import java.util.concurrent.*;
 
 /**
  * 游戏主面板，游戏启动
@@ -21,7 +19,7 @@ public class Game extends JPanel {
 
     private int backGroundTop = 0;
 
-    //调度器, 用于定时任务调度
+    // Swing 调度器，逻辑与渲染都在 EDT 执行，避免并发访问集合
     private final Timer timer;
     //时间间隔(ms)，控制刷新频率
     private final int timeInterval = 40;
@@ -60,7 +58,7 @@ public class Game extends JPanel {
         //启动英雄机鼠标监听
         new HeroController(this, heroAircraft);
 
-        this.timer = new Timer("game-action-timer", true);
+        this.timer = new Timer(timeInterval, e -> gameCycle());
 
     }
 
@@ -68,59 +66,55 @@ public class Game extends JPanel {
      * 游戏启动入口，执行游戏逻辑
      */
     public void action() {
+        if (!timer.isRunning()) {
+            timer.start();
+        }
 
-        // 定时任务：绘制、对象产生、碰撞判定、及结束判定
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
+    }
 
-                enemySpawnCounter++;
-                if (enemySpawnCounter >=enemySpawnCycle) {
-                    enemySpawnCounter = 0;
-                    if (enemyAircrafts.size() < enemyMaxNumber) {
-                        int locationX = (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.MOB_ENEMY_IMAGE.getWidth()));
-                        int locationY = (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05);
-                        if (Math.random() < 0.8) {
-                            enemyAircrafts.add(new MobEnemy(
-                                    locationX,
-                                    locationY,
-                                    0,
-                                    10,
-                                    30
-                            ));
-                        } else {
-                            enemyAircrafts.add(new EliteEnemy(
-                                    locationX,
-                                    locationY,
-                                    0,
-                                    8,
-                                    60
-                            ));
-                        }
-                    }
+    private void gameCycle() {
+        enemySpawnCounter++;
+        if (enemySpawnCounter >= enemySpawnCycle) {
+            enemySpawnCounter = 0;
+            if (enemyAircrafts.size() < enemyMaxNumber) {
+                int locationX = (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.MOB_ENEMY_IMAGE.getWidth()));
+                int locationY = (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05);
+                if (Math.random() < 0.8) {
+                    enemyAircrafts.add(new MobEnemy(
+                            locationX,
+                            locationY,
+                            0,
+                            10,
+                            30
+                    ));
+                } else {
+                    enemyAircrafts.add(new EliteEnemy(
+                            locationX,
+                            locationY,
+                            0,
+                            8,
+                            60
+                    ));
                 }
-
-                // 飞机发射子弹
-                shootAction();
-                // 子弹移动
-                bulletsMoveAction();
-                // 飞机移动
-                aircraftsMoveAction();
-                // 道具移动
-                itemsMoveAction();
-                // 撞击检测
-                crashCheckAction();
-                // 后处理
-                postProcessAction();
-                // 重绘界面
-                repaint();
-                // 游戏结束检查
-                checkResultAction();
             }
-        };
-        // 以固定延迟时间进行执行：本次任务执行完成后，延迟 timeInterval 再执行下一次
-        timer.schedule(task,0,timeInterval);
+        }
 
+        // 飞机发射子弹
+        shootAction();
+        // 子弹移动
+        bulletsMoveAction();
+        // 飞机移动
+        aircraftsMoveAction();
+        // 道具移动
+        itemsMoveAction();
+        // 撞击检测
+        crashCheckAction();
+        // 后处理
+        postProcessAction();
+        // 重绘界面
+        repaint();
+        // 游戏结束检查
+        checkResultAction();
     }
 
     //***********************
@@ -252,7 +246,7 @@ public class Game extends JPanel {
     private void checkResultAction(){
         // 游戏结束检查英雄机是否存活
         if (heroAircraft.getHp() <= 0) {
-            timer.cancel(); // 取消定时器并终止所有调度任务
+            timer.stop();
             gameOverFlag = true;
             System.out.println("Game Over!");
         }

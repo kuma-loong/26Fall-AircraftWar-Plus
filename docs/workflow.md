@@ -32,3 +32,18 @@
 
 ### 备注
 - 工作区存在用户已有改动：`PLAN.md`（未修改、未回滚）。
+
+## 2026-03-28 并发风险重构（Code Review）
+
+### 背景
+- Code review 识别到高风险问题：`Game` 使用 `java.util.Timer` 在后台线程修改集合，同时 Swing EDT 在 `paint` 中遍历同一集合，存在并发访问与 `ConcurrentModificationException` 风险。
+
+### 重构内容
+- 将 `Game` 主循环调度从 `java.util.Timer + TimerTask` 重构为 `javax.swing.Timer`。
+- 新增 `gameCycle()` 方法承载单帧更新逻辑。
+- `action()` 改为安全启动 `timer.start()`（避免重复启动）。
+- 游戏结束时使用 `timer.stop()` 停止循环。
+
+### 结果
+- 更新逻辑与渲染逻辑统一在 EDT 执行，消除跨线程并发修改集合的高风险。
+- 编译检查通过：`javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`。
