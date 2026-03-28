@@ -40,6 +40,10 @@ public class Game extends JPanel {
     //英雄机和敌机射击周期
     protected double shootCycle = 20;
     private int shootCounter = 0;
+    /**
+     * 敌机射击周期倍率：>1 更慢，<1 更快。
+     */
+    private double enemyShootCycleFactor = 1.0;
 
     //当前玩家分数
     private int score = 0;
@@ -80,21 +84,25 @@ public class Game extends JPanel {
                 int locationX = (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.MOB_ENEMY_IMAGE.getWidth()));
                 int locationY = (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05);
                 if (Math.random() < 0.8) {
-                    enemyAircrafts.add(new MobEnemy(
+                    AbstractAircraft enemyAircraft = new MobEnemy(
                             locationX,
                             locationY,
                             0,
                             10,
                             30
-                    ));
+                    );
+                    applyEnemyShootCycleFactor(enemyAircraft);
+                    enemyAircrafts.add(enemyAircraft);
                 } else {
-                    enemyAircrafts.add(new EliteEnemy(
+                    AbstractAircraft enemyAircraft = new EliteEnemy(
                             locationX,
                             locationY,
                             0,
                             8,
                             60
-                    ));
+                    );
+                    applyEnemyShootCycleFactor(enemyAircraft);
+                    enemyAircrafts.add(enemyAircraft);
                 }
             }
         }
@@ -128,7 +136,9 @@ public class Game extends JPanel {
             //英雄机射击
             heroBullets.addAll(heroAircraft.shoot());
             for (AbstractAircraft enemyAircraft : enemyAircrafts) {
-                enemyBullets.addAll(enemyAircraft.shoot());
+                if (enemyAircraft.canShootNow()) {
+                    enemyBullets.addAll(enemyAircraft.shoot());
+                }
             }
         }
     }
@@ -320,6 +330,24 @@ public class Game extends JPanel {
         } else {
             return new SuperFireItem(locationX, locationY, 0, speedY);
         }
+    }
+
+    /**
+     * 统一设置当前场上及后续生成敌机的射击周期倍率。
+     * @param enemyShootCycleFactor >0；值越大射击越慢
+     */
+    public void setEnemyShootCycleFactor(double enemyShootCycleFactor) {
+        if (enemyShootCycleFactor <= 0) {
+            return;
+        }
+        this.enemyShootCycleFactor = enemyShootCycleFactor;
+        for (AbstractAircraft enemyAircraft : enemyAircrafts) {
+            enemyAircraft.setShootCycleFactor(enemyShootCycleFactor);
+        }
+    }
+
+    private void applyEnemyShootCycleFactor(AbstractAircraft enemyAircraft) {
+        enemyAircraft.setShootCycleFactor(enemyShootCycleFactor);
     }
 
 }

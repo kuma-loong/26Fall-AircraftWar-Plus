@@ -47,3 +47,21 @@
 ### 结果
 - 更新逻辑与渲染逻辑统一在 EDT 执行，消除跨线程并发修改集合的高风险。
 - 编译检查通过：`javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`。
+
+## 2026-03-28 敌机射击频率通用接口重构
+
+### 目标
+- 提供可复用的敌机射击频率控制机制，支持未来按敌机类型与难度统一调节。
+
+### 修改内容
+- `AbstractAircraft` 新增通用射击频率能力：
+  - `setBaseShootCycle(int)`
+  - `setShootCycleFactor(double)`
+  - `canShootNow()`
+- `EliteEnemy` 改为使用基类频率机制，默认 `baseShootCycle=2`。
+- `Game` 敌机射击逻辑改为：`canShootNow()` 为真时才调用 `shoot()`。
+- `Game` 新增难度接口：`setEnemyShootCycleFactor(double)`，可统一影响“当前场上 + 后续生成”敌机。
+
+### 结果
+- 射击频率控制从具体敌机类抽离到通用基类，后续接入难度系统时可直接复用。
+- 编译检查通过：`javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`。

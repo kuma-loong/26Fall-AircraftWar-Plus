@@ -19,6 +19,8 @@ public class EliteEnemy extends AbstractAircraft {
 
     public EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY, hp);
+        // 默认精英敌机射击频率：每 2 个全局射击节拍发射一次
+        setBaseShootCycle(2);
     }
 
     @Override
