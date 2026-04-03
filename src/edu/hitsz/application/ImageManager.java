@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * 综合管理图片的加载，访问
  * 提供图片的静态访问方法
- * @author hitsz
+ * @author kuma
  */
 public class ImageManager {
 
@@ -42,6 +42,7 @@ public class ImageManager {
     public static BufferedImage MOB_ENEMY_IMAGE;
     public static BufferedImage ELITE_ENEMY_IMAGE;
     public static BufferedImage ELITE_PLUS_ENEMY_IMAGE;
+    public static BufferedImage ACE_ENEMY_IMAGE;
     public static BufferedImage BOSS_ENEMY_IMAGE;
     public static BufferedImage BLOOD_ITEM_IMAGE;
     public static BufferedImage FIRE_ITEM_IMAGE;
@@ -58,6 +59,7 @@ public class ImageManager {
             MOB_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/mob.png"));
             ELITE_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/elite.png"));
             ELITE_PLUS_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/elitePlus.png"));
+            ACE_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/elitePro.png"));
             BOSS_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/boss.png"));
             HERO_BULLET_IMAGE = ImageIO.read(new FileInputStream("src/images/bullet_hero.png"));
             ENEMY_BULLET_IMAGE = ImageIO.read(new FileInputStream("src/images/bullet_enemy.png"));
@@ -71,7 +73,7 @@ public class ImageManager {
             CLASSNAME_IMAGE_MAP.put(MobEnemy.class.getName(), MOB_ENEMY_IMAGE);
             CLASSNAME_IMAGE_MAP.put(EliteEnemy.class.getName(), ELITE_ENEMY_IMAGE);
             CLASSNAME_IMAGE_MAP.put(ElitePlusEnemy.class.getName(), ELITE_PLUS_ENEMY_IMAGE);
-            CLASSNAME_IMAGE_MAP.put(AceEnemy.class.getName(), ELITE_PLUS_ENEMY_IMAGE);
+            CLASSNAME_IMAGE_MAP.put(AceEnemy.class.getName(), ACE_ENEMY_IMAGE);
             CLASSNAME_IMAGE_MAP.put(BossEnemy.class.getName(), BOSS_ENEMY_IMAGE);
             CLASSNAME_IMAGE_MAP.put(HeroBullet.class.getName(), HERO_BULLET_IMAGE);
             CLASSNAME_IMAGE_MAP.put(EnemyBullet.class.getName(), ENEMY_BULLET_IMAGE);

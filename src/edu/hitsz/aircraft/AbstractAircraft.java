@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * 所有种类飞机的抽象父类
- * @author hitsz
+ * @author kuma
  */
 public abstract class AbstractAircraft extends AbstractFlyingObject {
 

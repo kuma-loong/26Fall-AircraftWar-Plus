@@ -7,3 +7,12 @@
    - `FireSupply active!`
    - `FirePlusSupply active!`
 5. 本次未执行 UML 同步，需在后续专门任务中补齐。
+6. 实验二阶段要求：
+   - 敌机创建走工厂方法模式，不在 `Game` 里直接 `new` 敌机。
+   - 道具创建走简单工厂模式，按敌机类型选择掉落池。
+7. 实验二模拟输出（非加血道具）：
+   - `FireSupply active!`
+   - `FirePlusSupply active!`
+   - `BombSupply active!`
+   - `FreezeSupply active!`
+8. 精锐/王牌需具备横向移动能力，依赖 `AbstractFlyingObject.forward()` 的触边反向逻辑。

@@ -100,3 +100,46 @@
 ### 结果
 - 实验一 UML 范围已补全。
 - 提供可复用的项目内 UML 维护教程。
+
+## 2026-04-03 实验二实现（除 UML）与首版自检
+
+### 需求来源
+- 用户要求：完成 `docs/lab/lab2.md` 对应的实验二代码与文档（排除 UML），首版完成后交由用户测试并进行 review。
+
+### 本次修改
+1. 工厂方法模式（敌机创建）
+- 新增抽象工厂：`EnemyFactory`。
+- 新增具体工厂：`MobEnemyFactory`、`EliteEnemyFactory`、`ElitePlusEnemyFactory`、`AceEnemyFactory`、`BossEnemyFactory`。
+- `Game` 敌机生成逻辑改为基于工厂与权重创建，不再直接 `new` 敌机。
+
+2. 简单工厂模式（道具创建）
+- 新增 `ItemPoolType`（`ELITE_PLUS_POOL`、`ACE_POOL`）。
+- 新增 `ItemSimpleFactory`，按掉落池规则随机创建道具。
+- `Game` 道具掉落逻辑改为调用简单工厂，不再硬编码道具创建分支。
+
+3. 敌机行为补齐（实验二清单）
+- `ElitePlusEnemy`：向下+左右移动，发射双排直射子弹。
+- `AceEnemy`：向下+左右移动，发射三发扇形散射子弹。
+- `ImageManager` 为 `AceEnemy` 独立映射 `elitePro.png`，便于界面区分敌机类型。
+
+4. 掉落与道具效果
+- 精锐击毁掉落池：4 种（不含冰冻），默认掉落概率 `35%`。
+- 王牌击毁掉落池：5 种（含冰冻），默认掉落概率 `50%`。
+- `BombItem` 与 `FreezeItem` 改为控制台模拟输出激活提示。
+
+5. 文档同步
+- 更新 `docs/lab/lab2.md`（实际完成、参数、范围说明）。
+- 新增 `docs/feature/factory-pattern-lab2.md`。
+- 更新 `docs/note.md`（实验二注意事项）。
+
+### 基础代码检查
+- 执行：`javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`
+- 结果：编译通过。
+
+### 首版 Review 结论
+- 已满足实验二代码清单（除 UML）：
+  - 两种工厂模式均落地；
+  - 4 类敌机出场；
+  - 精锐/王牌移动与射击满足要求；
+  - 掉落范围与模拟输出满足要求。
+- 建议用户进行界面实测，重点验证生成概率体感与弹道观感是否需要调参。

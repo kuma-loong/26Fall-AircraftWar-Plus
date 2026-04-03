@@ -3,6 +3,13 @@ package edu.hitsz.application;
 import edu.hitsz.aircraft.*;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
+import edu.hitsz.factory.AceEnemyFactory;
+import edu.hitsz.factory.EliteEnemyFactory;
+import edu.hitsz.factory.ElitePlusEnemyFactory;
+import edu.hitsz.factory.EnemyFactory;
+import edu.hitsz.factory.ItemPoolType;
+import edu.hitsz.factory.ItemSimpleFactory;
+import edu.hitsz.factory.MobEnemyFactory;
 import edu.hitsz.item.*;
 
 import javax.swing.*;
@@ -13,7 +20,7 @@ import java.util.List;
 
 /**
  * 游戏主面板，游戏启动
- * @author hitsz
+ * @author kuma
  */
 public class Game extends JPanel {
 
@@ -32,6 +39,20 @@ public class Game extends JPanel {
 
     //屏幕中出现的敌机最大数量
     private final int enemyMaxNumber = 5;
+    private static final int ENEMY_SPAWN_X_MARGIN = 50;
+    private static final double ENEMY_SPAWN_TOP_RATIO = 0.05;
+
+    private static final double MOB_WEIGHT = 0.45;
+    private static final double ELITE_WEIGHT = 0.25;
+    private static final double ELITE_PLUS_WEIGHT = 0.20;
+
+    private static final int MOB_SCORE = 10;
+    private static final int ELITE_SCORE = 20;
+    private static final int ELITE_PLUS_SCORE = 30;
+    private static final int ACE_SCORE = 50;
+
+    private static final double ELITE_PLUS_DROP_PROBABILITY = 0.35;
+    private static final double ACE_DROP_PROBABILITY = 0.50;
 
     //敌机生成周期
     protected double enemySpawnCycle  =  20;
@@ -53,6 +74,11 @@ public class Game extends JPanel {
 
     //游戏结束标志
     private boolean gameOverFlag = false;
+
+    private final EnemyFactory mobEnemyFactory = new MobEnemyFactory();
+    private final EnemyFactory eliteEnemyFactory = new EliteEnemyFactory();
+    private final EnemyFactory elitePlusEnemyFactory = new ElitePlusEnemyFactory();
+    private final EnemyFactory aceEnemyFactory = new AceEnemyFactory();
 
     public Game() {
         heroAircraft = HeroAircraft.getInstance();
@@ -84,29 +110,7 @@ public class Game extends JPanel {
         if (enemySpawnCounter >= enemySpawnCycle) {
             enemySpawnCounter = 0;
             if (enemyAircrafts.size() < enemyMaxNumber) {
-                int locationX = (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.MOB_ENEMY_IMAGE.getWidth()));
-                int locationY = (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05);
-                if (Math.random() < 0.8) {
-                    AbstractAircraft enemyAircraft = new MobEnemy(
-                            locationX,
-                            locationY,
-                            0,
-                            10,
-                            30
-                    );
-                    applyEnemyShootCycleFactor(enemyAircraft);
-                    enemyAircrafts.add(enemyAircraft);
-                } else {
-                    AbstractAircraft enemyAircraft = new EliteEnemy(
-                            locationX,
-                            locationY,
-                            0,
-                            8,
-                            60
-                    );
-                    applyEnemyShootCycleFactor(enemyAircraft);
-                    enemyAircrafts.add(enemyAircraft);
-                }
+                spawnEnemyAction();
             }
         }
 
@@ -172,6 +176,31 @@ public class Game extends JPanel {
         }
     }
 
+    /**
+     * 按工厂方法模式创建敌机并加入场景。
+     */
+    private void spawnEnemyAction() {
+        int locationX = (int) (Math.random() * (Main.WINDOW_WIDTH - ENEMY_SPAWN_X_MARGIN)) + ENEMY_SPAWN_X_MARGIN / 2;
+        int locationY = (int) (Math.random() * Main.WINDOW_HEIGHT * ENEMY_SPAWN_TOP_RATIO);
+        AbstractAircraft enemyAircraft = createEnemyByWeight(locationX, locationY);
+        applyEnemyShootCycleFactor(enemyAircraft);
+        enemyAircrafts.add(enemyAircraft);
+    }
+
+    private AbstractAircraft createEnemyByWeight(int locationX, int locationY) {
+        double random = Math.random();
+        if (random < MOB_WEIGHT) {
+            return mobEnemyFactory.createEnemy(locationX, locationY);
+        }
+        if (random < MOB_WEIGHT + ELITE_WEIGHT) {
+            return eliteEnemyFactory.createEnemy(locationX, locationY);
+        }
+        if (random < MOB_WEIGHT + ELITE_WEIGHT + ELITE_PLUS_WEIGHT) {
+            return elitePlusEnemyFactory.createEnemy(locationX, locationY);
+        }
+        return aceEnemyFactory.createEnemy(locationX, locationY);
+    }
+
 
     /**
      * 碰撞检测：
@@ -208,14 +237,7 @@ public class Game extends JPanel {
                     enemyAircraft.decreaseHp(bullet.getPower());
                     bullet.vanish();
                     if (enemyAircraft.notValid()) {
-                        if (enemyAircraft instanceof EliteEnemy) {
-                            score += 20;
-                            if (Math.random() < 0.3) {
-                                items.add(generateItem(enemyAircraft.getLocationX(), enemyAircraft.getLocationY()));
-                            }
-                        } else {
-                            score += 10;
-                        }
+                        handleEnemyDestroyed(enemyAircraft);
                     }
                 }
             }
@@ -328,15 +350,31 @@ public class Game extends JPanel {
         g.drawString("LIFE: " + this.heroAircraft.getHp(), x, y);
     }
 
-    private AbstractItem generateItem(int locationX, int locationY) {
-        int speedY = 6;
-        double random = Math.random();
-        if (random < 1.0 / 3) {
-            return new BloodItem(locationX, locationY, 0, speedY);
-        } else if (random < 2.0 / 3) {
-            return new FireItem(locationX, locationY, 0, speedY);
-        } else {
-            return new SuperFireItem(locationX, locationY, 0, speedY);
+    private void handleEnemyDestroyed(AbstractAircraft enemyAircraft) {
+        if (enemyAircraft instanceof AceEnemy) {
+            score += ACE_SCORE;
+            tryDropItem(enemyAircraft, ItemPoolType.ACE_POOL, ACE_DROP_PROBABILITY);
+            return;
+        }
+        if (enemyAircraft instanceof ElitePlusEnemy) {
+            score += ELITE_PLUS_SCORE;
+            tryDropItem(enemyAircraft, ItemPoolType.ELITE_PLUS_POOL, ELITE_PLUS_DROP_PROBABILITY);
+            return;
+        }
+        if (enemyAircraft instanceof EliteEnemy) {
+            score += ELITE_SCORE;
+            return;
+        }
+        score += MOB_SCORE;
+    }
+
+    private void tryDropItem(AbstractAircraft enemyAircraft, ItemPoolType poolType, double dropProbability) {
+        if (Math.random() < dropProbability) {
+            items.add(ItemSimpleFactory.createItem(
+                    poolType,
+                    enemyAircraft.getLocationX(),
+                    enemyAircraft.getLocationY()
+            ));
         }
     }
 
