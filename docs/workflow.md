@@ -143,3 +143,18 @@
   - 精锐/王牌移动与射击满足要求；
   - 掉落范围与模拟输出满足要求。
 - 建议用户进行界面实测，重点验证生成概率体感与弹道观感是否需要调参。
+
+## 2026-04-03 实验二 UML 补齐
+
+### 修改内容
+- 新增 `uml/Lab2Factory.puml`，包含两页结构图：
+  - 简单工厂模式（道具创建）；
+  - 工厂方法模式（敌机创建）。
+- 图中显式标注模式名称（`<<Simple Factory Pattern>>`、`<<Factory Method Pattern>>`）。
+- 更新 `docs/lab/lab2.md`，补充 UML 文件路径与页面说明。
+
+### 自检结论
+- UML 内容与当前代码实现一致：
+  - `ItemSimpleFactory + ItemPoolType` 对应道具创建链路；
+  - `EnemyFactory + 5 个具体工厂` 对应敌机创建链路；
+  - `Game` 作为工厂调用方关系明确。
