@@ -1,0 +1,110 @@
+@startuml
+' https://plantuml.com/class-diagram
+
+title Lab2 - Simple Factory Pattern (Item Creation)
+skinparam classAttributeIconSize 0
+
+package factory {
+  enum ItemPoolType {
+    ELITE_PLUS_POOL
+    ACE_POOL
+  }
+
+  class ItemSimpleFactory <<Simple Factory Pattern>> {
+    - {static} ITEM_SPEED_X:int
+    - {static} ITEM_SPEED_Y:int
+    - ItemSimpleFactory()
+    + {static} createItem(ItemPoolType itemPoolType, int locationX, int locationY):AbstractItem
+  }
+}
+
+package item {
+  abstract class AbstractItem {
+    + {abstract} activate(HeroAircraft heroAircraft):void
+  }
+
+  class BloodItem
+  class FireItem
+  class SuperFireItem
+  class BombItem
+  class FreezeItem
+}
+
+package aircraft {
+  class HeroAircraft {
+    + {static} getInstance():HeroAircraft
+  }
+}
+
+ItemSimpleFactory ..> ItemPoolType : select pool
+ItemSimpleFactory ..> BloodItem : create()
+ItemSimpleFactory ..> FireItem : create()
+ItemSimpleFactory ..> SuperFireItem : create()
+ItemSimpleFactory ..> BombItem : create()
+ItemSimpleFactory ..> FreezeItem : create()
+
+AbstractItem <|-- BloodItem
+AbstractItem <|-- FireItem
+AbstractItem <|-- SuperFireItem
+AbstractItem <|-- BombItem
+AbstractItem <|-- FreezeItem
+AbstractItem ..> HeroAircraft : activate()
+
+newpage
+
+title Lab2 - Factory Method Pattern (Enemy Creation)
+skinparam classAttributeIconSize 0
+
+package factory {
+  interface EnemyFactory <<Factory Method Pattern>> {
+    + createEnemy(int locationX, int locationY):AbstractAircraft
+  }
+
+  class MobEnemyFactory
+  class EliteEnemyFactory
+  class ElitePlusEnemyFactory
+  class AceEnemyFactory
+  class BossEnemyFactory
+}
+
+package aircraft {
+  abstract class AbstractAircraft {
+    + {abstract} shoot():List<BaseBullet>
+  }
+
+  class MobEnemy
+  class EliteEnemy
+  class ElitePlusEnemy
+  class AceEnemy
+  class BossEnemy
+}
+
+package application {
+  class Game {
+    - enemyAircrafts:List<AbstractAircraft>
+    + action():void
+  }
+}
+
+EnemyFactory <|.. MobEnemyFactory
+EnemyFactory <|.. EliteEnemyFactory
+EnemyFactory <|.. ElitePlusEnemyFactory
+EnemyFactory <|.. AceEnemyFactory
+EnemyFactory <|.. BossEnemyFactory
+
+AbstractAircraft <|-- MobEnemy
+AbstractAircraft <|-- EliteEnemy
+AbstractAircraft <|-- ElitePlusEnemy
+AbstractAircraft <|-- AceEnemy
+AbstractAircraft <|-- BossEnemy
+
+MobEnemyFactory ..> MobEnemy : createEnemy()
+EliteEnemyFactory ..> EliteEnemy : createEnemy()
+ElitePlusEnemyFactory ..> ElitePlusEnemy : createEnemy()
+AceEnemyFactory ..> AceEnemy : createEnemy()
+BossEnemyFactory ..> BossEnemy : createEnemy()
+
+Game ..> EnemyFactory : use factory objects
+Game ..> AbstractAircraft : manage list
+
+@enduml
