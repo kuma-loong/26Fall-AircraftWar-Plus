@@ -7,8 +7,6 @@ import edu.hitsz.factory.AceEnemyFactory;
 import edu.hitsz.factory.EliteEnemyFactory;
 import edu.hitsz.factory.ElitePlusEnemyFactory;
 import edu.hitsz.factory.EnemyFactory;
-import edu.hitsz.factory.ItemPoolType;
-import edu.hitsz.factory.ItemSimpleFactory;
 import edu.hitsz.factory.MobEnemyFactory;
 import edu.hitsz.item.*;
 
@@ -50,9 +48,6 @@ public class Game extends JPanel {
     private static final int ELITE_SCORE = 20;
     private static final int ELITE_PLUS_SCORE = 30;
     private static final int ACE_SCORE = 50;
-
-    private static final double ELITE_PLUS_DROP_PROBABILITY = 0.35;
-    private static final double ACE_DROP_PROBABILITY = 0.50;
 
     //敌机生成周期
     protected double enemySpawnCycle  =  20;
@@ -353,28 +348,17 @@ public class Game extends JPanel {
     private void handleEnemyDestroyed(AbstractAircraft enemyAircraft) {
         if (enemyAircraft instanceof AceEnemy) {
             score += ACE_SCORE;
-            tryDropItem(enemyAircraft, ItemPoolType.ACE_POOL, ACE_DROP_PROBABILITY);
-            return;
-        }
-        if (enemyAircraft instanceof ElitePlusEnemy) {
+        } else if (enemyAircraft instanceof ElitePlusEnemy) {
             score += ELITE_PLUS_SCORE;
-            tryDropItem(enemyAircraft, ItemPoolType.ELITE_PLUS_POOL, ELITE_PLUS_DROP_PROBABILITY);
-            return;
-        }
-        if (enemyAircraft instanceof EliteEnemy) {
+        } else if (enemyAircraft instanceof EliteEnemy) {
             score += ELITE_SCORE;
-            return;
+        } else {
+            score += MOB_SCORE;
         }
-        score += MOB_SCORE;
-    }
 
-    private void tryDropItem(AbstractAircraft enemyAircraft, ItemPoolType poolType, double dropProbability) {
-        if (Math.random() < dropProbability) {
-            items.add(ItemSimpleFactory.createItem(
-                    poolType,
-                    enemyAircraft.getLocationX(),
-                    enemyAircraft.getLocationY()
-            ));
+        AbstractItem droppedItem = enemyAircraft.tryGenerateDropItem();
+        if (droppedItem != null) {
+            items.add(droppedItem);
         }
     }
 

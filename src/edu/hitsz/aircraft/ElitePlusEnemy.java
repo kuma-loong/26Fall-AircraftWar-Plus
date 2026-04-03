@@ -3,6 +3,7 @@ package edu.hitsz.aircraft;
 import edu.hitsz.application.Main;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.bullet.EnemyBullet;
+import edu.hitsz.factory.ItemPoolType;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.List;
  * 向下并可横向移动，发射双排直射子弹。
  */
 public class ElitePlusEnemy extends AbstractAircraft {
+
+    private static final double DROP_PROBABILITY = 0.35;
 
     private final int shootNum = 2;
     private final int power = 25;
@@ -42,5 +45,15 @@ public class ElitePlusEnemy extends AbstractAircraft {
             bullets.add(new EnemyBullet(bulletX, y, 0, speedY, power));
         }
         return bullets;
+    }
+
+    @Override
+    public double getDropProbability() {
+        return DROP_PROBABILITY;
+    }
+
+    @Override
+    public ItemPoolType getDropItemPoolType() {
+        return ItemPoolType.ELITE_PLUS_POOL;
     }
 }

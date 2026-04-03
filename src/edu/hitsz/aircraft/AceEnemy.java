@@ -3,6 +3,7 @@ package edu.hitsz.aircraft;
 import edu.hitsz.application.Main;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.bullet.EnemyBullet;
+import edu.hitsz.factory.ItemPoolType;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.List;
  * 向下并可横向移动，发射三发扇形散射子弹。
  */
 public class AceEnemy extends AbstractAircraft {
+
+    private static final double DROP_PROBABILITY = 0.50;
 
     private final int power = 30;
     private final int direction = 1;
@@ -41,5 +44,15 @@ public class AceEnemy extends AbstractAircraft {
         bullets.add(new EnemyBullet(x, y, 0, speedY, power));
         bullets.add(new EnemyBullet(x + 10, y, 2, speedY, power));
         return bullets;
+    }
+
+    @Override
+    public double getDropProbability() {
+        return DROP_PROBABILITY;
+    }
+
+    @Override
+    public ItemPoolType getDropItemPoolType() {
+        return ItemPoolType.ACE_POOL;
     }
 }

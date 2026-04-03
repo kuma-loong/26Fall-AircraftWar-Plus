@@ -2,6 +2,10 @@ package edu.hitsz.aircraft;
 
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
+import edu.hitsz.factory.ItemPoolType;
+import edu.hitsz.factory.ItemSimpleFactory;
+import edu.hitsz.item.AbstractItem;
+
 import java.util.List;
 
 /**
@@ -88,6 +92,40 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
         return false;
     }
 
+    /**
+     * 获取敌机掉落概率，默认不掉落。
+     * @return [0,1] 区间内概率
+     */
+    public double getDropProbability() {
+        return 0.0;
+    }
+
+    /**
+     * 获取敌机掉落池类型，默认无掉落池。
+     * @return 掉落池类型；null 表示不掉落
+     */
+    public ItemPoolType getDropItemPoolType() {
+        return null;
+    }
+
+    /**
+     * 尝试生成掉落道具，具体掉落参数由子类定义。
+     * @return 掉落道具；未触发时返回 null
+     */
+    public AbstractItem tryGenerateDropItem() {
+        ItemPoolType poolType = getDropItemPoolType();
+        if (poolType == null) {
+            return null;
+        }
+        double probability = getDropProbability();
+        if (probability <= 0) {
+            return null;
+        }
+        if (Math.random() < Math.min(1.0, probability)) {
+            return ItemSimpleFactory.createItem(poolType, getLocationX(), getLocationY());
+        }
+        return null;
+    }
 
     /**
      * 飞机射击方法
