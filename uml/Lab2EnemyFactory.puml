@@ -1,58 +1,6 @@
 @startuml
-' https://plantuml.com/class-diagram
+' https://plantuml.com/class-diagramtitle Lab2 - Factory Method Pattern (Enemy Creation)
 
-title Lab2 - Simple Factory Pattern (Item Creation)
-skinparam classAttributeIconSize 0
-
-package factory {
-  enum ItemPoolType {
-    ELITE_PLUS_POOL
-    ACE_POOL
-  }
-
-  class ItemSimpleFactory <<Simple Factory Pattern>> {
-    - {static} ITEM_SPEED_X:int
-    - {static} ITEM_SPEED_Y:int
-    - ItemSimpleFactory()
-    + {static} createItem(ItemPoolType itemPoolType, int locationX, int locationY):AbstractItem
-  }
-}
-
-package item {
-  abstract class AbstractItem {
-    + {abstract} activate(HeroAircraft heroAircraft):void
-  }
-
-  class BloodItem
-  class FireItem
-  class SuperFireItem
-  class BombItem
-  class FreezeItem
-}
-
-package aircraft {
-  class HeroAircraft {
-    + {static} getInstance():HeroAircraft
-  }
-}
-
-ItemSimpleFactory ..> ItemPoolType : select pool
-ItemSimpleFactory ..> BloodItem : create()
-ItemSimpleFactory ..> FireItem : create()
-ItemSimpleFactory ..> SuperFireItem : create()
-ItemSimpleFactory ..> BombItem : create()
-ItemSimpleFactory ..> FreezeItem : create()
-
-AbstractItem <|-- BloodItem
-AbstractItem <|-- FireItem
-AbstractItem <|-- SuperFireItem
-AbstractItem <|-- BombItem
-AbstractItem <|-- FreezeItem
-AbstractItem ..> HeroAircraft : activate()
-
-newpage
-
-title Lab2 - Factory Method Pattern (Enemy Creation)
 skinparam classAttributeIconSize 0
 
 package factory {
