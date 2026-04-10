@@ -181,30 +181,4 @@ Game ..> AbstractItem : drop/manage
 Game ..> BaseBullet : manage
 AbstractItem ..> HeroAircraft : activate()
 
-newpage
-
-title HeroAircraft Singleton (DCL)
-skinparam classAttributeIconSize 0
-
-class HeroAircraft {
-    - {static} instance:HeroAircraft
-    - HeroAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
-    + {static} getInstance():HeroAircraft
-    + forward():void
-    + shoot():List<BaseBullet>
-}
-
-class Game {
-    - heroAircraft:HeroAircraft
-    + action():void
-}
-
-Game ..> HeroAircraft : getInstance()
-note right of HeroAircraft
-DCL steps:
-1) if (instance == null)
-2) synchronized(HeroAircraft.class)
-3) if (instance == null) new HeroAircraft(...)
-end note
-
 @enduml
