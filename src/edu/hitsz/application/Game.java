@@ -54,6 +54,11 @@ public class Game extends JPanel {
     private static final int BOSS_SCORE = 100;
     private static final int BOSS_TRIGGER_SCORE_INTERVAL = 300;
     private static final int BOSS_SPAWN_Y = 80;
+    private static final int BOSS_DROP_COUNT = 3;
+    private static final int ITEM_SPAWN_MARGIN = 20;
+    private static final int BOSS_DROP_X_SPREAD = 120;
+    private static final int BOSS_DROP_MIN_X_GAP = 24;
+    private static final int BOSS_DROP_Y_JITTER = 6;
 
     //敌机生成周期
     protected double enemySpawnCycle  =  20;
@@ -385,13 +390,7 @@ public class Game extends JPanel {
         if (enemyAircraft instanceof BossEnemy) {
             score += BOSS_SCORE;
             bossActive = false;
-            for (int i = 0; i < 3; i++) {
-                items.add(ItemSimpleFactory.createItem(
-                        ItemPoolType.ACE_POOL,
-                        enemyAircraft.getLocationX(),
-                        enemyAircraft.getLocationY()
-                ));
-            }
+            dropBossItems(enemyAircraft);
             return;
         }
         if (enemyAircraft instanceof AceEnemy) {
@@ -408,6 +407,42 @@ public class Game extends JPanel {
         if (droppedItem != null) {
             items.add(droppedItem);
         }
+    }
+
+    /**
+     * Boss 阵亡后，沿水平方向随机分散生成道具，避免重叠在同一坐标。
+     */
+    private void dropBossItems(AbstractAircraft bossEnemy) {
+        int centerX = bossEnemy.getLocationX();
+        int centerY = bossEnemy.getLocationY();
+        int[] dropXs = new int[BOSS_DROP_COUNT];
+        for (int i = 0; i < BOSS_DROP_COUNT; i++) {
+            int dropX;
+            int attempts = 0;
+            do {
+                int offsetX = (int) Math.round((Math.random() * 2 - 1) * BOSS_DROP_X_SPREAD);
+                dropX = clampToWindow(centerX + offsetX, ITEM_SPAWN_MARGIN, Main.WINDOW_WIDTH - ITEM_SPAWN_MARGIN);
+                attempts++;
+            } while (hasCloseDropX(dropXs, i, dropX) && attempts < 10);
+            dropXs[i] = dropX;
+
+            int yJitter = (int) Math.round((Math.random() * 2 - 1) * BOSS_DROP_Y_JITTER);
+            int dropY = clampToWindow(centerY + yJitter, ITEM_SPAWN_MARGIN, Main.WINDOW_HEIGHT - ITEM_SPAWN_MARGIN);
+            items.add(ItemSimpleFactory.createItem(ItemPoolType.ACE_POOL, dropX, dropY));
+        }
+    }
+
+    private boolean hasCloseDropX(int[] dropXs, int size, int candidateX) {
+        for (int i = 0; i < size; i++) {
+            if (Math.abs(dropXs[i] - candidateX) < BOSS_DROP_MIN_X_GAP) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int clampToWindow(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 
     /**
