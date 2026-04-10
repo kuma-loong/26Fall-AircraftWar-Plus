@@ -9,8 +9,8 @@ import edu.hitsz.aircraft.BossEnemy;
  */
 public class BossEnemyFactory implements EnemyFactory {
 
-    private static final int SPEED_X = 1;
-    private static final int SPEED_Y = 2;
+    private static final int SPEED_X = 2;
+    private static final int SPEED_Y = 0;
     private static final int HP = 300;
 
     @Override

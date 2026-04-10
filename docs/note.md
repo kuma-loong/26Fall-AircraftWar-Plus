@@ -16,3 +16,12 @@
    - `BombSupply active!`
    - `FreezeSupply active!`
 8. 精锐/王牌需具备横向移动能力，依赖 `AbstractFlyingObject.forward()` 的触边反向逻辑。
+9. 实验三开始，弹道逻辑统一走策略模式：
+   - 禁止在具体飞机类内继续硬编码弹道 `shoot()` 分支。
+   - 通过 `AbstractAircraft#setShootStrategy(...)` 注入算法对象。
+10. 实验三火力道具切换后的弹道状态不自动恢复，恢复机制留到实验五多线程阶段。
+11. 实验三 Boss 机制要求：
+   - 分数阈值触发 Boss；
+   - 同屏最多 1 台 Boss；
+   - Boss 仅左右移动；
+   - 阵亡固定掉落 3 个随机道具。

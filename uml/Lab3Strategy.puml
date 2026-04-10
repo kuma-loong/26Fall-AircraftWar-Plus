@@ -1,0 +1,93 @@
+@startuml
+' https://plantuml.com/class-diagram
+
+title Lab3 - Strategy Pattern (Shoot System)
+skinparam classAttributeIconSize 0
+
+package shootstrategy {
+  interface ShootStrategy <<Strategy>> {
+    + shoot(AbstractAircraft aircraft):List<BaseBullet>
+  }
+
+  class NoShootStrategy <<ConcreteStrategy>>
+  class StraightShootStrategy <<ConcreteStrategy>>
+  class DoubleStraightShootStrategy <<ConcreteStrategy>>
+  class ScatterShootStrategy <<ConcreteStrategy>>
+  class CircleShootStrategy <<ConcreteStrategy>>
+}
+
+package aircraft {
+  abstract class AbstractAircraft <<Context>> {
+    - shootStrategy:ShootStrategy
+    + setShootStrategy(ShootStrategy shootStrategy):void
+    + getShootStrategy():ShootStrategy
+    + shoot():List<BaseBullet>
+  }
+
+  class HeroAircraft {
+    - {static} instance:HeroAircraft
+    + {static} getInstance():HeroAircraft
+    + setDefaultShootStrategy():void
+    + setFireShootStrategy():void
+    + setSuperFireShootStrategy():void
+  }
+
+  class MobEnemy
+  class EliteEnemy
+  class ElitePlusEnemy
+  class AceEnemy
+  class BossEnemy
+}
+
+package item {
+  class FireItem {
+    + activate(HeroAircraft heroAircraft):void
+  }
+
+  class SuperFireItem {
+    + activate(HeroAircraft heroAircraft):void
+  }
+}
+
+package application {
+  class Game {
+    - bossActive:boolean
+    - nextBossTriggerScore:int
+    + action():void
+  }
+}
+
+ShootStrategy <|.. NoShootStrategy
+ShootStrategy <|.. StraightShootStrategy
+ShootStrategy <|.. DoubleStraightShootStrategy
+ShootStrategy <|.. ScatterShootStrategy
+ShootStrategy <|.. CircleShootStrategy
+
+AbstractAircraft o--> ShootStrategy : hold strategy
+
+AbstractAircraft <|-- HeroAircraft
+AbstractAircraft <|-- MobEnemy
+AbstractAircraft <|-- EliteEnemy
+AbstractAircraft <|-- ElitePlusEnemy
+AbstractAircraft <|-- AceEnemy
+AbstractAircraft <|-- BossEnemy
+
+MobEnemy ..> NoShootStrategy : default
+EliteEnemy ..> StraightShootStrategy : default
+ElitePlusEnemy ..> DoubleStraightShootStrategy : default
+AceEnemy ..> ScatterShootStrategy : default
+BossEnemy ..> CircleShootStrategy : default
+HeroAircraft ..> StraightShootStrategy : default
+HeroAircraft ..> ScatterShootStrategy : after FireItem
+HeroAircraft ..> CircleShootStrategy : after SuperFireItem
+
+FireItem ..> HeroAircraft : setFireShootStrategy()
+SuperFireItem ..> HeroAircraft : setSuperFireShootStrategy()
+Game ..> AbstractAircraft : spawn / shoot / manage
+
+note right of AbstractAircraft
+<<Strategy Pattern>>
+Context delegates shoot behavior to ShootStrategy.
+end note
+
+@enduml

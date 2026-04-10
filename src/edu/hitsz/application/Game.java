@@ -4,9 +4,12 @@ import edu.hitsz.aircraft.*;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
 import edu.hitsz.factory.AceEnemyFactory;
+import edu.hitsz.factory.BossEnemyFactory;
 import edu.hitsz.factory.EliteEnemyFactory;
 import edu.hitsz.factory.ElitePlusEnemyFactory;
 import edu.hitsz.factory.EnemyFactory;
+import edu.hitsz.factory.ItemPoolType;
+import edu.hitsz.factory.ItemSimpleFactory;
 import edu.hitsz.factory.MobEnemyFactory;
 import edu.hitsz.item.*;
 
@@ -48,6 +51,9 @@ public class Game extends JPanel {
     private static final int ELITE_SCORE = 20;
     private static final int ELITE_PLUS_SCORE = 30;
     private static final int ACE_SCORE = 50;
+    private static final int BOSS_SCORE = 100;
+    private static final int BOSS_TRIGGER_SCORE_INTERVAL = 300;
+    private static final int BOSS_SPAWN_Y = 80;
 
     //敌机生成周期
     protected double enemySpawnCycle  =  20;
@@ -69,11 +75,16 @@ public class Game extends JPanel {
 
     //游戏结束标志
     private boolean gameOverFlag = false;
+    // 当前是否存在 Boss（同屏唯一）
+    private boolean bossActive = false;
+    // 下一次 Boss 触发分数阈值
+    private int nextBossTriggerScore = BOSS_TRIGGER_SCORE_INTERVAL;
 
     private final EnemyFactory mobEnemyFactory = new MobEnemyFactory();
     private final EnemyFactory eliteEnemyFactory = new EliteEnemyFactory();
     private final EnemyFactory elitePlusEnemyFactory = new ElitePlusEnemyFactory();
     private final EnemyFactory aceEnemyFactory = new AceEnemyFactory();
+    private final EnemyFactory bossEnemyFactory = new BossEnemyFactory();
 
     public Game() {
         heroAircraft = HeroAircraft.getInstance();
@@ -104,8 +115,10 @@ public class Game extends JPanel {
         enemySpawnCounter++;
         if (enemySpawnCounter >= enemySpawnCycle) {
             enemySpawnCounter = 0;
-            if (enemyAircrafts.size() < enemyMaxNumber) {
-                spawnEnemyAction();
+            if (shouldSpawnBoss()) {
+                spawnBossAction();
+            } else if (enemyAircrafts.size() < enemyMaxNumber) {
+                spawnCommonEnemyAction();
             }
         }
 
@@ -172,14 +185,27 @@ public class Game extends JPanel {
     }
 
     /**
-     * 按工厂方法模式创建敌机并加入场景。
+     * 按工厂方法模式创建常规敌机并加入场景。
      */
-    private void spawnEnemyAction() {
+    private void spawnCommonEnemyAction() {
         int locationX = (int) (Math.random() * (Main.WINDOW_WIDTH - ENEMY_SPAWN_X_MARGIN)) + ENEMY_SPAWN_X_MARGIN / 2;
         int locationY = (int) (Math.random() * Main.WINDOW_HEIGHT * ENEMY_SPAWN_TOP_RATIO);
         AbstractAircraft enemyAircraft = createEnemyByWeight(locationX, locationY);
         applyEnemyShootCycleFactor(enemyAircraft);
         enemyAircrafts.add(enemyAircraft);
+    }
+
+    private boolean shouldSpawnBoss() {
+        return !bossActive && score >= nextBossTriggerScore;
+    }
+
+    private void spawnBossAction() {
+        int locationX = Main.WINDOW_WIDTH / 2;
+        AbstractAircraft bossEnemy = bossEnemyFactory.createEnemy(locationX, BOSS_SPAWN_Y);
+        applyEnemyShootCycleFactor(bossEnemy);
+        enemyAircrafts.add(bossEnemy);
+        bossActive = true;
+        nextBossTriggerScore += BOSS_TRIGGER_SCORE_INTERVAL;
     }
 
     private AbstractAircraft createEnemyByWeight(int locationX, int locationY) {
@@ -273,6 +299,16 @@ public class Game extends JPanel {
         heroBullets.removeIf(AbstractFlyingObject::notValid);
         enemyAircrafts.removeIf(AbstractFlyingObject::notValid);
         items.removeIf(AbstractFlyingObject::notValid);
+        bossActive = hasAliveBoss();
+    }
+
+    private boolean hasAliveBoss() {
+        for (AbstractAircraft enemyAircraft : enemyAircrafts) {
+            if (enemyAircraft instanceof BossEnemy) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -346,6 +382,18 @@ public class Game extends JPanel {
     }
 
     private void handleEnemyDestroyed(AbstractAircraft enemyAircraft) {
+        if (enemyAircraft instanceof BossEnemy) {
+            score += BOSS_SCORE;
+            bossActive = false;
+            for (int i = 0; i < 3; i++) {
+                items.add(ItemSimpleFactory.createItem(
+                        ItemPoolType.ACE_POOL,
+                        enemyAircraft.getLocationX(),
+                        enemyAircraft.getLocationY()
+                ));
+            }
+            return;
+        }
         if (enemyAircraft instanceof AceEnemy) {
             score += ACE_SCORE;
         } else if (enemyAircraft instanceof ElitePlusEnemy) {

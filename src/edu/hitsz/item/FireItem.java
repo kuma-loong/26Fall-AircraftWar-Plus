@@ -13,6 +13,7 @@ public class FireItem extends AbstractItem {
 
     @Override
     public void activate(HeroAircraft heroAircraft) {
+        heroAircraft.setFireShootStrategy();
         System.out.println("FireSupply active!");
     }
 }

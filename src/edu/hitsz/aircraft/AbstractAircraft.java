@@ -5,6 +5,8 @@ import edu.hitsz.basic.AbstractFlyingObject;
 import edu.hitsz.factory.ItemPoolType;
 import edu.hitsz.factory.ItemSimpleFactory;
 import edu.hitsz.item.AbstractItem;
+import edu.hitsz.shootstrategy.NoShootStrategy;
+import edu.hitsz.shootstrategy.ShootStrategy;
 
 import java.util.List;
 
@@ -26,6 +28,10 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
      */
     private double shootCycleFactor = 1.0;
     private int shootCounter = 0;
+    /**
+     * 当前飞机持有的射击策略（Strategy Pattern Context）。
+     */
+    private ShootStrategy shootStrategy = new NoShootStrategy();
 
     public AbstractAircraft(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY);
@@ -93,6 +99,26 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
     }
 
     /**
+     * 设置当前射击策略。
+     * @param shootStrategy 射击策略；传入 null 时退化为不发射策略
+     */
+    public void setShootStrategy(ShootStrategy shootStrategy) {
+        if (shootStrategy == null) {
+            this.shootStrategy = new NoShootStrategy();
+            return;
+        }
+        this.shootStrategy = shootStrategy;
+    }
+
+    /**
+     * 获取当前射击策略。
+     * @return 当前策略对象
+     */
+    public ShootStrategy getShootStrategy() {
+        return shootStrategy;
+    }
+
+    /**
      * 获取敌机掉落概率，默认不掉落。
      * @return [0,1] 区间内概率
      */
@@ -128,11 +154,11 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
     }
 
     /**
-     * 飞机射击方法
-     * @return
-     *  可射击对象需实现，返回子弹列表
-     *  非可射击对象空实现，返回空列表
+     * 飞机射击方法，由 Context 委托给当前 Strategy。
+     * @return 当前策略生成的子弹列表
      */
-    public abstract List<BaseBullet> shoot();
+    public List<BaseBullet> shoot() {
+        return shootStrategy.shoot(this);
+    }
 
 }

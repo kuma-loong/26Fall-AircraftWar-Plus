@@ -158,3 +158,57 @@
   - `ItemSimpleFactory + ItemPoolType` 对应道具创建链路；
   - `EnemyFactory + 5 个具体工厂` 对应敌机创建链路；
   - `Game` 作为工厂调用方关系明确。
+
+## 2026-04-10 实验三实现（策略模式 + Boss + 道具动态切换，除 UML）
+
+### 需求来源
+- 用户要求：按 `docs/lab/lab3.md` 的目标和约束落地实验三执行计划，并将 UML 放在最后一项。
+
+### 本次修改
+1. 策略模式重构（弹道系统）
+- 新增 `shootstrategy` 包：
+  - `ShootStrategy`
+  - `NoShootStrategy`
+  - `StraightShootStrategy`
+  - `DoubleStraightShootStrategy`
+  - `ScatterShootStrategy`
+  - `CircleShootStrategy`
+- `AbstractAircraft` 改为 Strategy Context：
+  - 新增 `shootStrategy` 字段；
+  - 新增 `setShootStrategy()` / `getShootStrategy()`；
+  - `shoot()` 统一委托策略执行。
+
+2. 机型默认策略注入
+- `MobEnemy`：不发射。
+- `EliteEnemy`：单排直射。
+- `ElitePlusEnemy`：双排直射。
+- `AceEnemy`：3 发散射。
+- `BossEnemy`：20 发环射。
+- `HeroAircraft`：默认直射（DCL 单例保持不变）。
+
+3. Boss 机制接入
+- `Game` 接入 `BossEnemyFactory` 和分数触发逻辑。
+- 新增 Boss 唯一性控制：同屏最多一个 Boss。
+- Boss 触发后悬浮上方，仅左右移动，不向下移动。
+- Boss 阵亡后固定掉落 3 个随机道具（全道具池）。
+- 增加 Boss 计分逻辑。
+
+4. 道具动态切换
+- `FireItem`：激活后切换英雄机为散射策略。
+- `SuperFireItem`：激活后切换英雄机为环射策略。
+- `BombItem` / `FreezeItem` 继续仅控制台提示。
+
+5. 文档同步
+- 更新 `docs/lab/lab3.md`（新增落地执行与验收映射）。
+- 新增 `docs/feature/strategy-pattern-lab3.md`。
+- 更新 `docs/note.md`（实验三注意事项）。
+
+### 基础代码检查
+- 执行：`javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`
+- 结果：编译通过。
+
+### Code Review 结论（本轮）
+- 策略模式已替换机型内弹道硬编码，符合实验三重构原则。
+- HeroAircraft 单例模式保持 DCL，符合项目强约束。
+- Boss 生成、唯一性、移动、环射和 3 道具掉落链路已接入。
+- 未引入火力超时恢复逻辑，符合实验三多线程豁免要求。

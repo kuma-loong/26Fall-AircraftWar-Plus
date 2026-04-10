@@ -13,6 +13,7 @@ public class SuperFireItem extends AbstractItem {
 
     @Override
     public void activate(HeroAircraft heroAircraft) {
+        heroAircraft.setSuperFireShootStrategy();
         System.out.println("FirePlusSupply active!");
     }
 }

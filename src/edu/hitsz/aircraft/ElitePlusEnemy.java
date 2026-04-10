@@ -1,12 +1,8 @@
 package edu.hitsz.aircraft;
 
 import edu.hitsz.application.Main;
-import edu.hitsz.bullet.BaseBullet;
-import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.factory.ItemPoolType;
-
-import java.util.LinkedList;
-import java.util.List;
+import edu.hitsz.shootstrategy.DoubleStraightShootStrategy;
 
 /**
  * 精锐敌机：
@@ -15,15 +11,14 @@ import java.util.List;
 public class ElitePlusEnemy extends AbstractAircraft {
 
     private static final double DROP_PROBABILITY = 0.35;
-
-    private final int shootNum = 2;
-    private final int power = 25;
-    private final int direction = 1;
+    private static final int BULLET_POWER = 25;
+    private static final int SHOOT_DIRECTION = 1;
 
     public ElitePlusEnemy(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY, hp);
         // 默认精锐敌机射击频率：每 2 个全局射击节拍发射一次
         setBaseShootCycle(2);
+        setShootStrategy(new DoubleStraightShootStrategy(BULLET_POWER, SHOOT_DIRECTION, false));
     }
 
     @Override
@@ -32,19 +27,6 @@ public class ElitePlusEnemy extends AbstractAircraft {
         if (locationY >= Main.WINDOW_HEIGHT) {
             vanish();
         }
-    }
-
-    @Override
-    public List<BaseBullet> shoot() {
-        List<BaseBullet> bullets = new LinkedList<>();
-        int x = this.getLocationX();
-        int y = this.getLocationY() + direction * 2;
-        int speedY = this.getSpeedY() + direction * 5;
-        for (int i = 0; i < shootNum; i++) {
-            int bulletX = x + (i * 2 - shootNum + 1) * 12;
-            bullets.add(new EnemyBullet(bulletX, y, 0, speedY, power));
-        }
-        return bullets;
     }
 
     @Override
