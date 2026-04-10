@@ -60,7 +60,7 @@ public class Game extends JPanel {
     private int enemySpawnCounter = 0;
 
     //英雄机射击周期
-    protected double heroShootCycle = 20;
+    protected double heroShootCycle = 15;
     private int heroShootCounter = 0;
     //敌机射击周期（全局节拍）
     protected double enemyShootCycle = 20;
