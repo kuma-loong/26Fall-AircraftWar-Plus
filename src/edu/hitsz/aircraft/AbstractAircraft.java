@@ -2,17 +2,36 @@ package edu.hitsz.aircraft;
 
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
+import edu.hitsz.factory.ItemPoolType;
+import edu.hitsz.factory.ItemSimpleFactory;
+import edu.hitsz.item.AbstractItem;
+import edu.hitsz.shootstrategy.NoShootStrategy;
+import edu.hitsz.shootstrategy.ShootStrategy;
+
 import java.util.List;
 
 /**
  * 所有种类飞机的抽象父类
- * @author hitsz
+ * @author kuma
  */
 public abstract class AbstractAircraft extends AbstractFlyingObject {
 
     //最大生命值
     protected int maxHp;
     protected int hp;
+    /**
+     * 敌机射击基准周期（按 Game.shootAction 调用次数计）。
+     */
+    private int baseShootCycle = 1;
+    /**
+     * 敌机射击周期难度倍率，>1 更慢，<1 更快。
+     */
+    private double shootCycleFactor = 1.0;
+    private int shootCounter = 0;
+    /**
+     * 当前飞机持有的射击策略（Strategy Pattern Context）。
+     */
+    private ShootStrategy shootStrategy = new NoShootStrategy();
 
     public AbstractAircraft(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY);
@@ -32,15 +51,114 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
         return hp;
     }
 
+    public int getMaxHp() {
+        return maxHp;
+    }
+
+    public void increaseHp(int increase) {
+        hp += increase;
+        if (hp > maxHp) {
+            hp = maxHp;
+        }
+    }
 
     /**
-     * 飞机射击方法
-     * @return
-     *  可射击对象需实现，返回子弹列表
-     *  非可射击对象空实现，返回空列表
+     * 设置敌机射击基准周期。
+     * @param baseShootCycle 基准周期，最小为 1
      */
-    public abstract List<BaseBullet> shoot();
+    public void setBaseShootCycle(int baseShootCycle) {
+        this.baseShootCycle = Math.max(1, baseShootCycle);
+        this.shootCounter = 0;
+    }
+
+    /**
+     * 设置敌机射击周期难度倍率。
+     * @param shootCycleFactor >0；值越大射击越慢
+     */
+    public void setShootCycleFactor(double shootCycleFactor) {
+        if (shootCycleFactor <= 0) {
+            this.shootCycleFactor = 1.0;
+        } else {
+            this.shootCycleFactor = shootCycleFactor;
+        }
+        this.shootCounter = 0;
+    }
+
+    /**
+     * 通用射击节流判断，每帧调用一次。
+     * @return true 表示当前允许执行 shoot()
+     */
+    public boolean canShootNow() {
+        shootCounter++;
+        int effectiveShootCycle = Math.max(1, (int) Math.round(baseShootCycle * shootCycleFactor));
+        if (shootCounter >= effectiveShootCycle) {
+            shootCounter = 0;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 设置当前射击策略。
+     * @param shootStrategy 射击策略；传入 null 时退化为不发射策略
+     */
+    public void setShootStrategy(ShootStrategy shootStrategy) {
+        if (shootStrategy == null) {
+            this.shootStrategy = new NoShootStrategy();
+            return;
+        }
+        this.shootStrategy = shootStrategy;
+    }
+
+    /**
+     * 获取当前射击策略。
+     * @return 当前策略对象
+     */
+    public ShootStrategy getShootStrategy() {
+        return shootStrategy;
+    }
+
+    /**
+     * 获取敌机掉落概率，默认不掉落。
+     * @return [0,1] 区间内概率
+     */
+    public double getDropProbability() {
+        return 0.0;
+    }
+
+    /**
+     * 获取敌机掉落池类型，默认无掉落池。
+     * @return 掉落池类型；null 表示不掉落
+     */
+    public ItemPoolType getDropItemPoolType() {
+        return null;
+    }
+
+    /**
+     * 尝试生成掉落道具，具体掉落参数由子类定义。
+     * @return 掉落道具；未触发时返回 null
+     */
+    public AbstractItem tryGenerateDropItem() {
+        ItemPoolType poolType = getDropItemPoolType();
+        if (poolType == null) {
+            return null;
+        }
+        double probability = getDropProbability();
+        if (probability <= 0) {
+            return null;
+        }
+        if (Math.random() < Math.min(1.0, probability)) {
+            return ItemSimpleFactory.createItem(poolType, getLocationX(), getLocationY());
+        }
+        return null;
+    }
+
+    /**
+     * 飞机射击方法，由 Context 委托给当前 Strategy。
+     * @return 当前策略生成的子弹列表
+     */
+    public List<BaseBullet> shoot() {
+        return shootStrategy.shoot(this);
+    }
 
 }
-
-

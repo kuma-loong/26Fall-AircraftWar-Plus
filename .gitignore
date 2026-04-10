@@ -3,3 +3,7 @@ out/
 .idea/
 *.iml
 *.log
+
+# OS X
+.DS_Store
+*.DS_Store

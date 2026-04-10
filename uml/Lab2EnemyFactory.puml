@@ -1,0 +1,58 @@
+@startuml
+' https://plantuml.com/class-diagramtitle Lab2 - Factory Method Pattern (Enemy Creation)
+
+skinparam classAttributeIconSize 0
+
+package factory {
+  interface EnemyFactory <<Factory Method Pattern>> {
+    + createEnemy(int locationX, int locationY):AbstractAircraft
+  }
+
+  class MobEnemyFactory
+  class EliteEnemyFactory
+  class ElitePlusEnemyFactory
+  class AceEnemyFactory
+  class BossEnemyFactory
+}
+
+package aircraft {
+  abstract class AbstractAircraft {
+    + {abstract} shoot():List<BaseBullet>
+  }
+
+  class MobEnemy
+  class EliteEnemy
+  class ElitePlusEnemy
+  class AceEnemy
+  class BossEnemy
+}
+
+package application {
+  class Game {
+    - enemyAircrafts:List<AbstractAircraft>
+    + action():void
+  }
+}
+
+EnemyFactory <|.. MobEnemyFactory
+EnemyFactory <|.. EliteEnemyFactory
+EnemyFactory <|.. ElitePlusEnemyFactory
+EnemyFactory <|.. AceEnemyFactory
+EnemyFactory <|.. BossEnemyFactory
+
+AbstractAircraft <|-- MobEnemy
+AbstractAircraft <|-- EliteEnemy
+AbstractAircraft <|-- ElitePlusEnemy
+AbstractAircraft <|-- AceEnemy
+AbstractAircraft <|-- BossEnemy
+
+MobEnemyFactory ..> MobEnemy : createEnemy()
+EliteEnemyFactory ..> EliteEnemy : createEnemy()
+ElitePlusEnemyFactory ..> ElitePlusEnemy : createEnemy()
+AceEnemyFactory ..> AceEnemy : createEnemy()
+BossEnemyFactory ..> BossEnemy : createEnemy()
+
+Game ..> EnemyFactory : use factory objects
+Game ..> AbstractAircraft : manage list
+
+@enduml
