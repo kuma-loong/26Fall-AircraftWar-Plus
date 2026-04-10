@@ -10,7 +10,7 @@ import edu.hitsz.shootstrategy.DoubleStraightShootStrategy;
  */
 public class ElitePlusEnemy extends AbstractAircraft {
 
-    private static final double DROP_PROBABILITY = 0.35;
+    private static final double DROP_PROBABILITY = 0.40;
     private static final int BULLET_POWER = 25;
     private static final int SHOOT_DIRECTION = 1;
 

@@ -10,7 +10,7 @@ import edu.hitsz.shootstrategy.ScatterShootStrategy;
  */
 public class AceEnemy extends AbstractAircraft {
 
-    private static final double DROP_PROBABILITY = 0.50;
+    private static final double DROP_PROBABILITY = 0.55;
     private static final int BULLET_POWER = 30;
     private static final int SHOOT_DIRECTION = 1;
     private static final int BULLET_COUNT = 3;
