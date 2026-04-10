@@ -10,7 +10,7 @@ public class ElitePlusEnemyFactory implements EnemyFactory {
 
     private static final int SPEED_X = 3;
     private static final int SPEED_Y = 7;
-    private static final int HP = 90;
+    private static final int HP = 60;
 
     @Override
     public AbstractAircraft createEnemy(int locationX, int locationY) {
