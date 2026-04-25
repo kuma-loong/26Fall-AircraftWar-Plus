@@ -3,6 +3,9 @@ package edu.hitsz.application;
 import edu.hitsz.aircraft.*;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
+import edu.hitsz.dao.FileScoreRecordDao;
+import edu.hitsz.dao.GameDifficulty;
+import edu.hitsz.dao.ScoreBoardService;
 import edu.hitsz.factory.AceEnemyFactory;
 import edu.hitsz.factory.BossEnemyFactory;
 import edu.hitsz.factory.EliteEnemyFactory;
@@ -24,6 +27,7 @@ import java.util.List;
  * @author kuma
  */
 public class Game extends JPanel {
+    private static final String DEFAULT_PLAYER_NAME = "Player";
 
     private int backGroundTop = 0;
 
@@ -80,6 +84,7 @@ public class Game extends JPanel {
 
     //游戏结束标志
     private boolean gameOverFlag = false;
+    private boolean scoreRecorded = false;
     // 当前是否存在 Boss（同屏唯一）
     private boolean bossActive = false;
     // 下一次 Boss 触发分数阈值
@@ -90,8 +95,20 @@ public class Game extends JPanel {
     private final EnemyFactory elitePlusEnemyFactory = new ElitePlusEnemyFactory();
     private final EnemyFactory aceEnemyFactory = new AceEnemyFactory();
     private final EnemyFactory bossEnemyFactory = new BossEnemyFactory();
+    private final GameDifficulty difficulty;
+    private final ScoreBoardService scoreBoardService;
 
     public Game() {
+        this(GameDifficulty.NORMAL);
+    }
+
+    /**
+     * 游戏面板构造器，预留难度注入能力。
+     * @param difficulty 当前游戏难度
+     */
+    public Game(GameDifficulty difficulty) {
+        this.difficulty = difficulty == null ? GameDifficulty.NORMAL : difficulty;
+        this.scoreBoardService = new ScoreBoardService(this.difficulty, new FileScoreRecordDao(this.difficulty));
         heroAircraft = HeroAircraft.getInstance();
 
         enemyAircrafts = new LinkedList<>();
@@ -325,6 +342,11 @@ public class Game extends JPanel {
             timer.stop();
             gameOverFlag = true;
             System.out.println("Game Over!");
+            if (!scoreRecorded) {
+                scoreBoardService.recordScore(DEFAULT_PLAYER_NAME, score);
+                scoreBoardService.printScoreBoard();
+                scoreRecorded = true;
+            }
         }
     };
 
