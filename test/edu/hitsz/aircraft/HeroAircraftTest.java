@@ -22,7 +22,7 @@ class HeroAircraftTest {
     @BeforeEach
     void setUp() {
         heroAircraft = HeroAircraft.getInstance();
-        heroAircraft.setDefaultShootStrategy();
+        heroAircraft.prepareForNewGame();
         heroAircraft.setLocation(256, 700);
     }
 
@@ -87,6 +87,19 @@ class HeroAircraftTest {
         Thread.sleep(110);
         assertEquals(20, heroAircraft.shoot().size());
         assertTrue(waitUntilBulletCount(1, 500));
+    }
+
+    @Test
+    @DisplayName("Prepare for new game clears temporary fire state")
+    void shouldRestoreDefaultStrategyWhenPreparingForNewGame() throws InterruptedException {
+        heroAircraft.activateTemporarySuperFireShootStrategy(200);
+        assertTrue(waitUntilBulletCount(20, 80));
+
+        heroAircraft.prepareForNewGame();
+        assertEquals(1, heroAircraft.shoot().size());
+
+        Thread.sleep(220);
+        assertEquals(1, heroAircraft.shoot().size());
     }
 
     private boolean waitUntilBulletCount(int expectedCount, long timeoutMillis) throws InterruptedException {

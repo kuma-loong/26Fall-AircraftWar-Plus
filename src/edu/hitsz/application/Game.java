@@ -3,9 +3,7 @@ package edu.hitsz.application;
 import edu.hitsz.aircraft.*;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
-import edu.hitsz.dao.FileScoreRecordDao;
 import edu.hitsz.dao.GameDifficulty;
-import edu.hitsz.dao.ScoreBoardService;
 import edu.hitsz.factory.AceEnemyFactory;
 import edu.hitsz.factory.BossEnemyFactory;
 import edu.hitsz.factory.EliteEnemyFactory;
@@ -21,14 +19,13 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * 游戏主面板，游戏启动
  * @author kuma
  */
 public class Game extends JPanel {
-    private static final String DEFAULT_PLAYER_NAME = "Player";
-
     private int backGroundTop = 0;
 
     // Swing 调度器，逻辑与渲染都在 EDT 执行，避免并发访问集合
@@ -84,7 +81,7 @@ public class Game extends JPanel {
 
     //游戏结束标志
     private boolean gameOverFlag = false;
-    private boolean scoreRecorded = false;
+    private boolean gameOverHandled = false;
     // 当前是否存在 Boss（同屏唯一）
     private boolean bossActive = false;
     // 下一次 Boss 触发分数阈值
@@ -96,11 +93,10 @@ public class Game extends JPanel {
     private final EnemyFactory aceEnemyFactory = new AceEnemyFactory();
     private final EnemyFactory bossEnemyFactory = new BossEnemyFactory();
     private final GameDifficulty difficulty;
-    private final ScoreBoardService scoreBoardService;
 
-    private Runnable onGameOver;
+    private Consumer<GameOverInfo> onGameOver;
 
-    public void setOnGameOver(Runnable onGameOver) {
+    public void setOnGameOver(Consumer<GameOverInfo> onGameOver) {
         this.onGameOver = onGameOver;
     }
 
@@ -114,9 +110,9 @@ public class Game extends JPanel {
      */
     public Game(GameDifficulty difficulty) {
         this.difficulty = difficulty == null ? GameDifficulty.NORMAL : difficulty;
-        this.scoreBoardService = new ScoreBoardService(this.difficulty, new FileScoreRecordDao(this.difficulty));
         ImageManager.setBackgroundByDifficulty(this.difficulty);
         heroAircraft = HeroAircraft.getInstance();
+        heroAircraft.prepareForNewGame();
 
         enemyAircrafts = new LinkedList<>();
         heroBullets = new LinkedList<>();
@@ -358,22 +354,10 @@ public class Game extends JPanel {
             AudioManager.stopAllLoopingMusic();
             AudioManager.playGameOver();
             System.out.println("Game Over!");
-            if (!scoreRecorded) {
-                // 收集玩家姓名并保存成绩
-                String playerName = JOptionPane.showInputDialog(this, 
-                        "游戏结束！您的得分为: " + score + "\n请输入玩家姓名：", 
-                        "游戏结束", 
-                        JOptionPane.QUESTION_MESSAGE);
-                if (playerName == null || playerName.trim().isEmpty()) {
-                    playerName = DEFAULT_PLAYER_NAME;
-                }
-                scoreBoardService.recordScore(playerName, score);
-                scoreBoardService.printScoreBoard();
-                scoreRecorded = true;
-                
-                // 触发 UI 跳转回到主循环的控制器
+            if (!gameOverHandled) {
+                gameOverHandled = true;
                 if (onGameOver != null) {
-                    onGameOver.run();
+                    onGameOver.accept(new GameOverInfo(difficulty, score));
                 }
             }
         }

@@ -55,6 +55,18 @@ public class HeroAircraft extends AbstractAircraft {
     }
 
     /**
+     * 为一局新游戏初始化单例状态。
+     * 保持 DCL 单例约束，同时清理上一局遗留的生命值、位置和火力计时状态。
+     */
+    public synchronized void prepareForNewGame() {
+        fireEffectVersion++;
+        this.hp = this.maxHp;
+        this.isValid = true;
+        this.setLocation(Main.WINDOW_WIDTH / 2, Main.WINDOW_HEIGHT - ImageManager.HERO_IMAGE.getHeight());
+        this.setDefaultShootStrategy();
+    }
+
+    /**
      * 切回英雄机默认直射策略。
      */
     public void setDefaultShootStrategy() {
