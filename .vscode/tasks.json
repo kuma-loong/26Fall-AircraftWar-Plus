@@ -1,0 +1,59 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Compile Source",
+      "type": "shell",
+      "command": "zsh",
+      "args": [
+        "-lc",
+        "find src/edu/hitsz -name '*.java' -print0 | xargs -0 javac -encoding UTF-8 -d out/production"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": "$javac"
+    },
+    {
+      "label": "Run Game",
+      "type": "shell",
+      "command": "java",
+      "args": [
+        "-cp",
+        "out/production",
+        "edu.hitsz.application.Main"
+      ],
+      "dependsOn": "Compile Source",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Run JUnit5 Tests",
+      "type": "shell",
+      "command": "zsh",
+      "args": [
+        "-lc",
+        "java -jar lib/junit-platform-console-standalone-1.12.2.jar --class-path out/test:out/production --scan-class-path"
+      ],
+      "dependsOn": "Compile Tests",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Compile Tests",
+      "type": "shell",
+      "command": "zsh",
+      "args": [
+        "-lc",
+        "find test -name '*.java' -print0 | xargs -0 javac -encoding UTF-8 -cp lib/junit-platform-console-standalone-1.12.2.jar:out/production -d out/test"
+      ],
+      "dependsOn": "Compile Source",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": "$javac"
+    }
+  ]
+}

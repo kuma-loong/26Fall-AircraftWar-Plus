@@ -1,4 +1,3 @@
-lib/
 out/
 .idea/
 *.iml
@@ -7,3 +6,7 @@ out/
 # OS X
 .DS_Store
 *.DS_Store
+
+# Libraries
+lib/*
+!lib/junit-platform-console-standalone-1.12.2.jar
