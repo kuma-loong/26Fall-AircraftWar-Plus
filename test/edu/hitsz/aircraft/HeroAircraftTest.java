@@ -10,6 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * HeroAircraft 及其父类行为测试。
@@ -64,5 +65,38 @@ class HeroAircraftTest {
         heroAircraft.setSuperFireShootStrategy();
         List<BaseBullet> bullets = heroAircraft.shoot();
         assertEquals(20, bullets.size());
+    }
+
+    @Test
+    @DisplayName("Temporary fire strategy returns to default after duration")
+    void shouldRestoreDefaultStrategyAfterTemporaryFireEnds() throws InterruptedException {
+        heroAircraft.activateTemporaryFireShootStrategy(120);
+
+        assertTrue(waitUntilBulletCount(3, 80));
+        assertTrue(waitUntilBulletCount(1, 500));
+    }
+
+    @Test
+    @DisplayName("Latest temporary fire effect wins during overlap")
+    void shouldKeepLatestTemporaryFireEffectWhenOverlapping() throws InterruptedException {
+        heroAircraft.activateTemporaryFireShootStrategy(120);
+        Thread.sleep(40);
+        heroAircraft.activateTemporarySuperFireShootStrategy(220);
+
+        assertTrue(waitUntilBulletCount(20, 80));
+        Thread.sleep(110);
+        assertEquals(20, heroAircraft.shoot().size());
+        assertTrue(waitUntilBulletCount(1, 500));
+    }
+
+    private boolean waitUntilBulletCount(int expectedCount, long timeoutMillis) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + timeoutMillis;
+        while (System.currentTimeMillis() <= deadline) {
+            if (heroAircraft.shoot().size() == expectedCount) {
+                return true;
+            }
+            Thread.sleep(10);
+        }
+        return heroAircraft.shoot().size() == expectedCount;
     }
 }

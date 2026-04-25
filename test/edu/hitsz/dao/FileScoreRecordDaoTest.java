@@ -29,11 +29,30 @@ class FileScoreRecordDaoTest {
         LocalDateTime time = LocalDateTime.of(2026, 4, 25, 12, 0, 0);
 
         dao.addRecord(new ScoreRecord("Player", 120, time));
+        dao.addRecord(new ScoreRecord("Ace", 300, time.plusMinutes(1)));
 
         List<ScoreRecord> records = dao.getAllRecords();
-        assertEquals(1, records.size());
+        assertEquals(2, records.size());
         assertEquals("Player", records.get(0).getPlayerName());
         assertEquals(120, records.get(0).getScore());
+    }
+
+    @Test
+    @DisplayName("ScoreBoardService sorts by score descending")
+    void shouldSortRecordsByScoreDescending() {
+        Path filePath = tempDir.resolve("sorted.tsv");
+        FileScoreRecordDao dao = new FileScoreRecordDao(filePath);
+        ScoreBoardService service = new ScoreBoardService(GameDifficulty.NORMAL, dao);
+
+        service.recordScore("Alice", 150, LocalDateTime.of(2026, 4, 25, 12, 0, 0));
+        service.recordScore("Bob", 220, LocalDateTime.of(2026, 4, 25, 12, 1, 0));
+        service.recordScore("Carol", 180, LocalDateTime.of(2026, 4, 25, 12, 2, 0));
+
+        List<ScoreRecord> records = service.getSortedRecords();
+
+        assertEquals("Bob", records.get(0).getPlayerName());
+        assertEquals("Carol", records.get(1).getPlayerName());
+        assertEquals("Alice", records.get(2).getPlayerName());
     }
 
     @Test

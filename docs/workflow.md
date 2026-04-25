@@ -262,3 +262,42 @@
   - `Game` 结算流程不会重复写榜；
   - DAO 文件操作使用 `Iterator`/整体回写，未引入并发修改风险；
   - 难度与数据文件映射关系固定、可扩展。
+
+## 2026-04-25 实验五非 UI 实现（音效线程 + 火力计时）
+
+### 需求来源
+- 用户要求：仅完成实验五非 UI 任务，明确跳过难度选择、排行榜 Swing 界面和输入弹窗等 UI 工作。
+
+### 本次修改
+1. 音频模块
+- 新增 `application/MusicThread`，基于 `Thread` 实现单次播放、循环播放和中途停止。
+- 新增 `application/AudioManager`，统一封装普通 BGM、Boss BGM 与短音效播放。
+
+2. 游戏流程接线
+- `Game.action()` 启动普通 BGM。
+- Boss 生成时切换 Boss BGM，Boss 阵亡后恢复普通 BGM。
+- 英雄子弹命中敌机、拾取道具、炸弹触发、游戏结束时接入对应音效。
+- 游戏结束时停止循环音乐，继续保留默认玩家 `Player` 的排行榜写入与控制台输出。
+
+3. 火力道具时长控制
+- `FireItem` / `SuperFireItem` 改为默认持续 `10000ms` 的限时火力。
+- `HeroAircraft` 新增版本号校验，连续拾取时仅最后一次效果有权恢复默认策略。
+
+4. 难度与背景
+- `ImageManager` 新增按 `GameDifficulty` 切换背景图的方法。
+- `new Game()` 仍默认 `NORMAL`，不引入新的启动 UI。
+
+5. 测试与文档
+- 扩展 `HeroAircraftTest`，覆盖限时恢复与连续拾取覆盖场景。
+- 扩展 `FileScoreRecordDaoTest`，补充排序行为验证。
+- 更新 `docs/lab/lab5.md`、`docs/note.md`，新增 `docs/feature/audio-and-firepower-lab5.md`。
+
+### 基础代码检查与 Code Review
+- 编译检查：
+  - `find src/edu/hitsz -name "*.java" -print0 | xargs -0 javac -encoding UTF-8 -d out/production`
+  - `find test -name "*.java" -print0 | xargs -0 javac -encoding UTF-8 -cp lib/junit-platform-console-standalone-1.12.2.jar:out/production -d out/test`
+- Code review 关注点：
+  - 音频线程通过 `volatile` 状态位与 `stopMusic()` 协同退出；
+  - 火力恢复线程不直接操作游戏集合，避免引入 EDT 并发修改问题；
+  - 旧火力线程不会覆盖新火力效果；
+  - 未提前实现实验六难度参数细化。

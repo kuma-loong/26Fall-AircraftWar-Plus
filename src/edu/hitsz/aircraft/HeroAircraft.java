@@ -21,6 +21,7 @@ public class HeroAircraft extends AbstractAircraft {
     private static final int FIRE_SCATTER_BULLET_COUNT = 3;
     private static final int SUPER_FIRE_CIRCLE_BULLET_COUNT = 20;
     private static final int SUPER_FIRE_CIRCLE_BULLET_SPEED = 7;
+    private long fireEffectVersion = 0L;
 
     private HeroAircraft(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY, hp);
@@ -77,6 +78,56 @@ public class HeroAircraft extends AbstractAircraft {
                 SUPER_FIRE_CIRCLE_BULLET_COUNT,
                 SUPER_FIRE_CIRCLE_BULLET_SPEED
         ));
+    }
+
+    /**
+     * 激活限时散射火力，结束后仅由最后一次激活恢复默认策略。
+     * @param durationMillis 持续时间（毫秒）
+     */
+    public void activateTemporaryFireShootStrategy(long durationMillis) {
+        activateTemporaryShootStrategy(durationMillis, false);
+    }
+
+    /**
+     * 激活限时环射火力，结束后仅由最后一次激活恢复默认策略。
+     * @param durationMillis 持续时间（毫秒）
+     */
+    public void activateTemporarySuperFireShootStrategy(long durationMillis) {
+        activateTemporaryShootStrategy(durationMillis, true);
+    }
+
+    private void activateTemporaryShootStrategy(long durationMillis, boolean superFireMode) {
+        final long effectVersion;
+        synchronized (this) {
+            fireEffectVersion++;
+            effectVersion = fireEffectVersion;
+            if (superFireMode) {
+                setSuperFireShootStrategy();
+            } else {
+                setFireShootStrategy();
+            }
+        }
+
+        Runnable restoreTask = () -> {
+            try {
+                Thread.sleep(Math.max(0L, durationMillis));
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+            synchronized (HeroAircraft.this) {
+                if (effectVersion == fireEffectVersion) {
+                    setDefaultShootStrategy();
+                }
+            }
+        };
+
+        Thread timerThread = new Thread(
+                restoreTask,
+                superFireMode ? "Hero-SuperFire-Timer" : "Hero-Fire-Timer"
+        );
+        timerThread.setDaemon(true);
+        timerThread.start();
     }
 
 }

@@ -1,19 +1,20 @@
 package edu.hitsz.application;
 
 
-import edu.hitsz.aircraft.HeroAircraft;
 import edu.hitsz.aircraft.EliteEnemy;
 import edu.hitsz.aircraft.ElitePlusEnemy;
 import edu.hitsz.aircraft.AceEnemy;
 import edu.hitsz.aircraft.BossEnemy;
+import edu.hitsz.aircraft.HeroAircraft;
 import edu.hitsz.aircraft.MobEnemy;
 import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.bullet.HeroBullet;
+import edu.hitsz.dao.GameDifficulty;
 import edu.hitsz.item.BloodItem;
-import edu.hitsz.item.FireItem;
-import edu.hitsz.item.SuperFireItem;
 import edu.hitsz.item.BombItem;
+import edu.hitsz.item.FireItem;
 import edu.hitsz.item.FreezeItem;
+import edu.hitsz.item.SuperFireItem;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -34,6 +35,7 @@ public class ImageManager {
      * 可使用 CLASSNAME_IMAGE_MAP.get( obj.getClass().getName() ) 获得 obj 所属基类对应的图片
      */
     private static final Map<String, BufferedImage> CLASSNAME_IMAGE_MAP = new HashMap<>();
+    private static final String IMAGE_DIRECTORY = "src/images/";
 
     public static BufferedImage BACKGROUND_IMAGE;
     public static BufferedImage HERO_IMAGE;
@@ -53,21 +55,21 @@ public class ImageManager {
     static {
         try {
 
-            BACKGROUND_IMAGE = ImageIO.read(new FileInputStream("src/images/bg.jpg"));
+            BACKGROUND_IMAGE = loadImage("bg.jpg");
 
-            HERO_IMAGE = ImageIO.read(new FileInputStream("src/images/hero.png"));
-            MOB_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/mob.png"));
-            ELITE_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/elite.png"));
-            ELITE_PLUS_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/elitePlus.png"));
-            ACE_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/elitePro.png"));
-            BOSS_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/boss.png"));
-            HERO_BULLET_IMAGE = ImageIO.read(new FileInputStream("src/images/bullet_hero.png"));
-            ENEMY_BULLET_IMAGE = ImageIO.read(new FileInputStream("src/images/bullet_enemy.png"));
-            BLOOD_ITEM_IMAGE = ImageIO.read(new FileInputStream("src/images/prop_blood.png"));
-            FIRE_ITEM_IMAGE = ImageIO.read(new FileInputStream("src/images/prop_bullet.png"));
-            SUPER_FIRE_ITEM_IMAGE = ImageIO.read(new FileInputStream("src/images/prop_bulletPlus.png"));
-            BOMB_ITEM_IMAGE = ImageIO.read(new FileInputStream("src/images/prop_bomb.png"));
-            FREEZE_ITEM_IMAGE = ImageIO.read(new FileInputStream("src/images/prop_freeze.png"));
+            HERO_IMAGE = loadImage("hero.png");
+            MOB_ENEMY_IMAGE = loadImage("mob.png");
+            ELITE_ENEMY_IMAGE = loadImage("elite.png");
+            ELITE_PLUS_ENEMY_IMAGE = loadImage("elitePlus.png");
+            ACE_ENEMY_IMAGE = loadImage("elitePro.png");
+            BOSS_ENEMY_IMAGE = loadImage("boss.png");
+            HERO_BULLET_IMAGE = loadImage("bullet_hero.png");
+            ENEMY_BULLET_IMAGE = loadImage("bullet_enemy.png");
+            BLOOD_ITEM_IMAGE = loadImage("prop_blood.png");
+            FIRE_ITEM_IMAGE = loadImage("prop_bullet.png");
+            SUPER_FIRE_ITEM_IMAGE = loadImage("prop_bulletPlus.png");
+            BOMB_ITEM_IMAGE = loadImage("prop_bomb.png");
+            FREEZE_ITEM_IMAGE = loadImage("prop_freeze.png");
 
             CLASSNAME_IMAGE_MAP.put(HeroAircraft.class.getName(), HERO_IMAGE);
             CLASSNAME_IMAGE_MAP.put(MobEnemy.class.getName(), MOB_ENEMY_IMAGE);
@@ -98,6 +100,32 @@ public class ImageManager {
             return null;
         }
         return get(obj.getClass().getName());
+    }
+
+    /**
+     * 按难度切换背景图，不改变其他资源加载方式。
+     * @param difficulty 当前难度
+     */
+    public static void setBackgroundByDifficulty(GameDifficulty difficulty) {
+        GameDifficulty safeDifficulty = difficulty == null ? GameDifficulty.NORMAL : difficulty;
+        String backgroundFileName = switch (safeDifficulty) {
+            case EASY -> "bg2.jpg";
+            case NORMAL -> "bg.jpg";
+            case HARD -> "bg3.jpg";
+        };
+        try {
+            BACKGROUND_IMAGE = loadImage(backgroundFileName);
+        } catch (IOException exception) {
+            try {
+                BACKGROUND_IMAGE = loadImage("bg.jpg");
+            } catch (IOException ignored) {
+                // 图片资源在静态初始化阶段已校验，此处保底不再退出程序。
+            }
+        }
+    }
+
+    private static BufferedImage loadImage(String fileName) throws IOException {
+        return ImageIO.read(new FileInputStream(IMAGE_DIRECTORY + fileName));
     }
 
 }

@@ -98,6 +98,12 @@ public class Game extends JPanel {
     private final GameDifficulty difficulty;
     private final ScoreBoardService scoreBoardService;
 
+    private Runnable onGameOver;
+
+    public void setOnGameOver(Runnable onGameOver) {
+        this.onGameOver = onGameOver;
+    }
+
     public Game() {
         this(GameDifficulty.NORMAL);
     }
@@ -109,6 +115,7 @@ public class Game extends JPanel {
     public Game(GameDifficulty difficulty) {
         this.difficulty = difficulty == null ? GameDifficulty.NORMAL : difficulty;
         this.scoreBoardService = new ScoreBoardService(this.difficulty, new FileScoreRecordDao(this.difficulty));
+        ImageManager.setBackgroundByDifficulty(this.difficulty);
         heroAircraft = HeroAircraft.getInstance();
 
         enemyAircrafts = new LinkedList<>();
@@ -128,6 +135,7 @@ public class Game extends JPanel {
      */
     public void action() {
         if (!timer.isRunning()) {
+            AudioManager.playBgm();
             timer.start();
         }
 
@@ -228,6 +236,7 @@ public class Game extends JPanel {
         enemyAircrafts.add(bossEnemy);
         bossActive = true;
         nextBossTriggerScore += BOSS_TRIGGER_SCORE_INTERVAL;
+        AudioManager.playBossBgm();
     }
 
     private AbstractAircraft createEnemyByWeight(int locationX, int locationY) {
@@ -279,6 +288,7 @@ public class Game extends JPanel {
                     // 敌机损失一定生命值
                     enemyAircraft.decreaseHp(bullet.getPower());
                     bullet.vanish();
+                    AudioManager.playBulletHit();
                     if (enemyAircraft.notValid()) {
                         handleEnemyDestroyed(enemyAircraft);
                     }
@@ -303,7 +313,11 @@ public class Game extends JPanel {
                 continue;
             }
             if (heroAircraft.crash(item)) {
+                AudioManager.playGetSupply();
                 item.activate(heroAircraft);
+                if (item instanceof BombItem) {
+                    AudioManager.playBombExplosion();
+                }
                 item.vanish();
             }
         }
@@ -341,14 +355,29 @@ public class Game extends JPanel {
         if (heroAircraft.getHp() <= 0) {
             timer.stop();
             gameOverFlag = true;
+            AudioManager.stopAllLoopingMusic();
+            AudioManager.playGameOver();
             System.out.println("Game Over!");
             if (!scoreRecorded) {
-                scoreBoardService.recordScore(DEFAULT_PLAYER_NAME, score);
+                // 收集玩家姓名并保存成绩
+                String playerName = JOptionPane.showInputDialog(this, 
+                        "游戏结束！您的得分为: " + score + "\n请输入玩家姓名：", 
+                        "游戏结束", 
+                        JOptionPane.QUESTION_MESSAGE);
+                if (playerName == null || playerName.trim().isEmpty()) {
+                    playerName = DEFAULT_PLAYER_NAME;
+                }
+                scoreBoardService.recordScore(playerName, score);
                 scoreBoardService.printScoreBoard();
                 scoreRecorded = true;
+                
+                // 触发 UI 跳转回到主循环的控制器
+                if (onGameOver != null) {
+                    onGameOver.run();
+                }
             }
         }
-    };
+    }
 
     //***********************
     //      Paint 各部分
@@ -413,6 +442,9 @@ public class Game extends JPanel {
             score += BOSS_SCORE;
             bossActive = false;
             dropBossItems(enemyAircraft);
+            if (!gameOverFlag) {
+                AudioManager.resumeNormalBgm();
+            }
             return;
         }
         if (enemyAircraft instanceof AceEnemy) {
