@@ -212,3 +212,53 @@
 - HeroAircraft 单例模式保持 DCL，符合项目强约束。
 - Boss 生成、唯一性、移动、环射和 3 道具掉落链路已接入。
 - 未引入火力超时恢复逻辑，符合实验三多线程豁免要求。
+
+## 2026-04-25 实验四实现（DAO 排行榜 + JUnit5 + VS Code 配置）
+
+### 需求来源
+- 用户要求：按实验四执行计划完成 DAO 排行榜、HeroAircraft 单元测试、VS Code + JDK25 + JUnit5 配置，并同步 UML 与文档。
+
+### 本次修改
+1. DAO 模式接入
+- 新增 `edu.hitsz.dao` 包：
+  - `ScoreRecord`
+  - `ScoreRecordDao`
+  - `FileScoreRecordDao`
+  - `GameDifficulty`
+  - `ScoreBoardService`
+- 排行榜采用 `data/ranking-*.tsv` 文件存储，业务排序与控制台展示由服务层负责。
+
+2. 游戏逻辑接入
+- `Game` 新增 `difficulty` 与 `scoreBoardService` 字段。
+- 默认构造器固定使用 `GameDifficulty.NORMAL`，并预留 `Game(GameDifficulty difficulty)` 供后续实验扩展。
+- `checkResultAction()` 调整为结算只执行一次：
+  - 打印 `Game Over!`
+  - 自动保存默认玩家 `Player` 的本局分数
+  - 打印当前难度排行榜
+
+3. 测试补齐
+- 新增 `HeroAircraftTest`：
+  - 单例性测试
+  - 父类位置方法测试
+  - 默认 / 火力 / 超级火力策略子弹数量测试
+- 新增 `FileScoreRecordDaoTest`：
+  - 新增与读取
+  - 空文件读取
+  - 按名次删除
+  - 难度文件路径隔离
+
+4. 开发环境配置
+- 新增 `.vscode/settings.json`，固定 JDK 25 路径并声明 `src` / `test`。
+- 新增 `.vscode/tasks.json`，提供编译源码、运行游戏、编译测试、运行 JUnit5 测试任务。
+
+5. UML 与文档同步
+- 新增 `uml/Lab4Dao.puml`。
+- 新增 `docs/feature/dao-pattern-lab4.md`。
+- 更新 `docs/lab/lab4.md`、`docs/note.md`。
+
+### 基础代码检查与 Code Review
+- 已执行静态自检，重点检查：
+  - HeroAircraft 仍保持 DCL 单例；
+  - `Game` 结算流程不会重复写榜；
+  - DAO 文件操作使用 `Iterator`/整体回写，未引入并发修改风险；
+  - 难度与数据文件映射关系固定、可扩展。

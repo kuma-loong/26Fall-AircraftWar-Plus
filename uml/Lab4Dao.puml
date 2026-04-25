@@ -1,0 +1,72 @@
+@startuml
+
+title Lab4 - DAO Pattern (Score Board)
+skinparam classAttributeIconSize 0
+
+package dao {
+  enum GameDifficulty {
+    EASY
+    NORMAL
+    HARD
+  }
+
+  class ScoreRecord <<Value Object>> {
+    - playerName:String
+    - score:int
+    - recordTime:LocalDateTime
+    + getPlayerName():String
+    + getScore():int
+    + getRecordTime():LocalDateTime
+    + formatRecordTime():String
+    + toTsvLine():String
+  }
+
+  interface ScoreRecordDao <<DAO Pattern>> {
+    + getAllRecords():List<ScoreRecord>
+    + addRecord(ScoreRecord scoreRecord):void
+    + deleteRecord(ScoreRecord scoreRecord):boolean
+  }
+
+  class FileScoreRecordDao <<DAO Impl>> {
+    - filePath:Path
+    + getAllRecords():List<ScoreRecord>
+    + addRecord(ScoreRecord scoreRecord):void
+    + deleteRecord(ScoreRecord scoreRecord):boolean
+    + getFilePath():Path
+  }
+
+  class ScoreBoardService {
+    - difficulty:GameDifficulty
+    - scoreRecordDao:ScoreRecordDao
+    + recordScore(String playerName, int score):void
+    + getSortedRecords():List<ScoreRecord>
+    + deleteRecordByRank(int rank):boolean
+    + printScoreBoard():void
+  }
+}
+
+package application {
+  class Game {
+    - difficulty:GameDifficulty
+    - scoreBoardService:ScoreBoardService
+    + Game()
+    + Game(GameDifficulty difficulty)
+    + action():void
+  }
+}
+
+ScoreRecordDao <|.. FileScoreRecordDao
+ScoreBoardService --> ScoreRecordDao : access data
+ScoreBoardService --> ScoreRecord : sort / rank
+FileScoreRecordDao --> ScoreRecord : read / write
+FileScoreRecordDao --> GameDifficulty : resolve file
+Game --> ScoreBoardService : record and print
+Game --> GameDifficulty : current difficulty
+
+note right of ScoreRecordDao
+<<DAO Pattern>>
+Data access logic is separated from
+score sorting and console presentation.
+end note
+
+@enduml
