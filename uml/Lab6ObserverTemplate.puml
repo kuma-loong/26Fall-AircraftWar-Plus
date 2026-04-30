@@ -1,0 +1,73 @@
+@startuml
+title Lab6 Observer Pattern
+
+interface ItemEffectObserver {
+  +onBombActivated(effect: BombEffect)
+  +onFreezeActivated(effect: FreezeEffect)
+}
+
+abstract class AbstractItem {
+  -observers: List<ItemEffectObserver>
+  +addObserver(observer: ItemEffectObserver)
+  +removeObserver(observer: ItemEffectObserver)
+  +clearObservers()
+  +activate(heroAircraft: HeroAircraft)
+}
+
+class BombItem {
+  -bombEffect: BombEffect
+  +activate(heroAircraft: HeroAircraft)
+}
+
+class FreezeItem {
+  -freezeEffect: FreezeEffect
+  +activate(heroAircraft: HeroAircraft)
+}
+
+class BombEffect
+class FreezeEffect
+abstract class AbstractAircraft
+class EnemyBullet
+
+AbstractItem <|-- BombItem
+AbstractItem <|-- FreezeItem
+ItemEffectObserver <|.. AbstractAircraft
+ItemEffectObserver <|.. EnemyBullet
+BombItem --> BombEffect
+FreezeItem --> FreezeEffect
+AbstractItem o--> ItemEffectObserver
+
+note bottom of AbstractItem
+<<Observer Pattern>>
+Subject / ConcreteSubject
+end note
+@enduml
+
+@startuml
+title Lab6 Template Method Pattern
+
+abstract class Game {
+  +start()
+  +action()
+  #initializeDifficulty()
+  #progressDifficulty()
+  #getBossHpBonusPerSpawn(spawnIndex: int)
+}
+
+class EasyGame
+class NormalGame
+class HardGame
+class GameMainFrame {
+  -createGame(difficulty: GameDifficulty)
+}
+
+Game <|-- EasyGame
+Game <|-- NormalGame
+Game <|-- HardGame
+GameMainFrame --> Game
+
+note bottom of Game
+<<Template Method Pattern>>
+action() defines frame skeleton
+end note
+@enduml

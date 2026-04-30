@@ -301,3 +301,57 @@
   - 火力恢复线程不直接操作游戏集合，避免引入 EDT 并发修改问题；
   - 旧火力线程不会覆盖新火力效果；
   - 未提前实现实验六难度参数细化。
+
+## 2026-04-30 实验六实现（观察者模式 + 模板模式）
+
+### 需求来源
+- 用户要求：按既定 Lab6 实施计划完成两项核心重构，并补齐测试、UML、文档与 code review。
+
+### 本次修改
+1. 模板模式重构
+- `Game` 改为抽象模板基类，新增 `start()` 启动 `Timer` 与 BGM。
+- `action()` 固化为单帧模板方法：生成 -> 射击 -> 移动 -> 碰撞 -> 后处理 -> 难度递进 -> 重绘 -> 结算。
+- 新增 `EasyGame`、`NormalGame`、`HardGame` 三个难度子类。
+- `GameMainFrame.startGame()` 改为按 `GameDifficulty` 分派具体子类。
+
+2. 观察者模式重构
+- 新增 `item/ItemEffectObserver`、`BombEffect`、`FreezeEffect`。
+- `AbstractItem` 新增观察者注册、移除、清空与广播能力。
+- `BombItem` / `FreezeItem` 改为真实广播效果，不再输出模拟日志。
+- `AbstractAircraft` 与 `EnemyBullet` 作为观察者接收炸弹/冰冻通知。
+
+3. 飞行状态与结算补齐
+- `AbstractFlyingObject` 新增永久静止、临时冻结、临时减速和自动恢复逻辑。
+- `AbstractAircraft` 新增：
+  - `resetHp(int)`
+  - 炸弹击毁待结算标记
+  - 禁掉落标记
+- `Game` 统一处理炸弹击毁后的计分与禁掉落，避免重复结算。
+
+4. 难度参数与递进
+- `Easy`：无 Boss、无递进。
+- `Normal`：每 300 帧提升敌机生成速度、血量倍率、速度倍率。
+- `Hard`：每 250 帧额外提升敌机射击频率并拉长英雄射击周期；Boss 血量按召唤次数增长。
+- 两种递进均输出控制台升级日志。
+
+5. 测试、UML 与文档
+- 新增 `GameTemplateModeTest`。
+- 新增 `ItemObserverEffectTest`。
+- 新增 `uml/Lab6ObserverTemplate.puml`。
+- 更新 `docs/lab/lab6.md`、新增 `docs/feature/observer-template-lab6.md`、同步 `docs/note.md`。
+
+### 执行验证
+- 源码编译：
+  - `javac -encoding UTF-8 -d out/production $(find src/edu/hitsz -name "*.java")`
+- 测试编译：
+  - `find test -name "*.java" -print0 | xargs -0 javac -encoding UTF-8 -cp lib/junit-platform-console-standalone-1.12.2.jar:out/production -d out/test`
+- 全量测试：
+  - `java -jar lib/junit-platform-console-standalone-1.12.2.jar --class-path out/test:out/production --scan-class-path`
+- 结果：20/20 测试通过。
+
+### 本轮 Code Review 结论
+- `HeroAircraft` 的 DCL 单例未被破坏。
+- `Game` 仍使用 Swing EDT 上的 `Timer`，集合读写未回退到跨线程并发。
+- 道具触发后调用 `clearObservers()`，未保留脏引用。
+- 炸弹计分通过待结算标记统一回收，未出现重复计分。
+- 冻结/减速状态只影响敌机与敌机子弹，不污染英雄机火力计时线程。
