@@ -478,3 +478,33 @@
 - JUnit：
   - `java -jar lib/junit-platform-console-standalone-1.12.2.jar execute --class-path /tmp/aircraftwar-test:/tmp/aircraftwar-build --scan-class-path`
 - 结果：`23/23` 测试通过。
+
+## 2026-04-30 创新功能修复（三）：高分辨率自定义背景自适应缩放
+
+### 需求来源
+- 用户反馈：启用“按图片尺寸启动窗口”时，高分辨率背景会直接把游戏窗口放大到超出屏幕范围，影响使用。
+
+### 本次修改
+1. 视口缩放规则
+- `GameViewport` 新增 `fitToBounds(...)`，统一负责在给定边界内按比例缩放目标尺寸。
+- 若背景原始尺寸未超限，则保持原尺寸；超限时按等比缩小后的尺寸启动窗口。
+
+2. 启动窗口上限控制
+- `GameMainFrame` 在使用自定义背景尺寸启动时，不再直接采用图片原始宽高。
+- 新规则改为：使用当前屏幕宽高的 `90%` 作为窗口最大边界，再调用 `GameViewport.fitToBounds(...)` 得到最终运行尺寸。
+- 这样既保留“自由尺寸”能力，也避免超大图片导致窗口超出屏幕。
+
+3. 测试补齐
+- 新增 `GameViewportTest`：
+  - 原尺寸在边界内时保持不变；
+  - 超大图片按高度瓶颈等比缩小；
+  - 宽度为瓶颈时按宽度上限等比缩小。
+
+### 执行验证
+- 源码编译：
+  - `javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`
+- 测试编译：
+  - `find test -name "*.java" -print0 | xargs -0 javac -sourcepath test -encoding UTF-8 -cp lib/junit-platform-console-standalone-1.12.2.jar:/tmp/aircraftwar-build -d /tmp/aircraftwar-test`
+- JUnit：
+  - `java -jar lib/junit-platform-console-standalone-1.12.2.jar execute --class-path /tmp/aircraftwar-test:/tmp/aircraftwar-build --scan-class-path`
+- 结果：`26/26` 测试通过。
