@@ -31,6 +31,10 @@ public abstract class AbstractFlyingObject {
 
     //有效（生存）标记，标记为 false的对象会在下次刷新时清除
     protected boolean isValid = true;
+    private boolean permanentlyFrozen = false;
+    private long freezeUntilMillis = 0L;
+    private long slowUntilMillis = 0L;
+    private double slowFactor = 1.0;
 
     public AbstractFlyingObject() {
     }
@@ -47,12 +51,71 @@ public abstract class AbstractFlyingObject {
      * 若飞行对象触碰到横向边界，横向速度反向
      */
     public void forward() {
-        locationX += speedX;
-        locationY += speedY;
+        refreshMotionState();
+        int effectiveSpeedX = getEffectiveSpeed(speedX);
+        int effectiveSpeedY = getEffectiveSpeed(speedY);
+        locationX += effectiveSpeedX;
+        locationY += effectiveSpeedY;
         if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
             // 横向超出边界后反向
             speedX = -speedX;
         }
+    }
+
+    /**
+     * 永久静止。
+     */
+    public void freezePermanently() {
+        permanentlyFrozen = true;
+        freezeUntilMillis = Long.MAX_VALUE;
+        clearTemporarySlow();
+    }
+
+    /**
+     * 临时冻结，持续一段时间后自动恢复。
+     *
+     * @param durationMillis 持续毫秒
+     */
+    public void freezeTemporarily(long durationMillis) {
+        long safeDuration = Math.max(0L, durationMillis);
+        freezeUntilMillis = Math.max(freezeUntilMillis, System.currentTimeMillis() + safeDuration);
+    }
+
+    /**
+     * 临时减速，持续一段时间后自动恢复。
+     *
+     * @param factor 减速倍率，(0,1] 为减速
+     * @param durationMillis 持续毫秒
+     */
+    public void slowTemporarily(double factor, long durationMillis) {
+        if (factor <= 0) {
+            return;
+        }
+        slowFactor = factor;
+        slowUntilMillis = System.currentTimeMillis() + Math.max(0L, durationMillis);
+    }
+
+    /**
+     * 取消所有临时运动效果（永久冻结除外）。
+     */
+    public void clearTemporaryMotionEffect() {
+        if (!permanentlyFrozen) {
+            freezeUntilMillis = 0L;
+        }
+        clearTemporarySlow();
+    }
+
+    /**
+     * 按倍率缩放当前速度分量。
+     *
+     * @param factor 速度倍率，>0
+     */
+    public void scaleSpeed(double factor) {
+        if (factor <= 0) {
+            return;
+        }
+        speedX = scaleComponent(speedX, factor);
+        speedY = scaleComponent(speedY, factor);
     }
 
     /**
@@ -141,5 +204,37 @@ public abstract class AbstractFlyingObject {
         return !this.isValid;
     }
 
-}
+    private void refreshMotionState() {
+        long now = System.currentTimeMillis();
+        if (!permanentlyFrozen && freezeUntilMillis > 0 && now >= freezeUntilMillis) {
+            freezeUntilMillis = 0L;
+        }
+        if (slowUntilMillis > 0 && now >= slowUntilMillis) {
+            clearTemporarySlow();
+        }
+    }
 
+    private void clearTemporarySlow() {
+        slowUntilMillis = 0L;
+        slowFactor = 1.0;
+    }
+
+    private int getEffectiveSpeed(int baseSpeed) {
+        if (permanentlyFrozen || freezeUntilMillis > 0) {
+            return 0;
+        }
+        return scaleComponent(baseSpeed, slowFactor);
+    }
+
+    private int scaleComponent(int value, double factor) {
+        if (value == 0) {
+            return 0;
+        }
+        int scaled = (int) Math.round(value * factor);
+        if (scaled == 0) {
+            return value > 0 ? 1 : -1;
+        }
+        return scaled;
+    }
+
+}

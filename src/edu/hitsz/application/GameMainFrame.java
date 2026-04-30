@@ -51,10 +51,10 @@ public class GameMainFrame extends JFrame {
      * @param difficulty 选择的游戏难度
      */
     public void startGame(GameDifficulty difficulty) {
-        replaceCurrentGame(new Game(difficulty));
+        replaceCurrentGame(createGame(difficulty));
         currentGame.setOnGameOver(this::handleGameOver);
         cardLayout.show(mainCardPanel, GAME_CARD);
-        currentGame.action();
+        currentGame.start();
     }
 
     /**
@@ -90,5 +90,14 @@ public class GameMainFrame extends JFrame {
         mainCardPanel.add(currentGame, GAME_CARD);
         mainCardPanel.revalidate();
         mainCardPanel.repaint();
+    }
+
+    private Game createGame(GameDifficulty difficulty) {
+        GameDifficulty safeDifficulty = difficulty == null ? GameDifficulty.NORMAL : difficulty;
+        return switch (safeDifficulty) {
+            case EASY -> new EasyGame();
+            case NORMAL -> new NormalGame();
+            case HARD -> new HardGame();
+        };
     }
 }

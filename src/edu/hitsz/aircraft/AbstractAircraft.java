@@ -5,6 +5,9 @@ import edu.hitsz.basic.AbstractFlyingObject;
 import edu.hitsz.factory.ItemPoolType;
 import edu.hitsz.factory.ItemSimpleFactory;
 import edu.hitsz.item.AbstractItem;
+import edu.hitsz.item.BombEffect;
+import edu.hitsz.item.FreezeEffect;
+import edu.hitsz.item.ItemEffectObserver;
 import edu.hitsz.shootstrategy.NoShootStrategy;
 import edu.hitsz.shootstrategy.ShootStrategy;
 
@@ -14,7 +17,7 @@ import java.util.List;
  * 所有种类飞机的抽象父类
  * @author kuma
  */
-public abstract class AbstractAircraft extends AbstractFlyingObject {
+public abstract class AbstractAircraft extends AbstractFlyingObject implements ItemEffectObserver {
 
     //最大生命值
     protected int maxHp;
@@ -28,6 +31,8 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
      */
     private double shootCycleFactor = 1.0;
     private int shootCounter = 0;
+    private boolean dropDisabled = false;
+    private boolean bombDestroyedPendingSettlement = false;
     /**
      * 当前飞机持有的射击策略（Strategy Pattern Context）。
      */
@@ -60,6 +65,17 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
         if (hp > maxHp) {
             hp = maxHp;
         }
+    }
+
+    /**
+     * 重置飞机血量与最大血量。
+     *
+     * @param hp 新生命值
+     */
+    public void resetHp(int hp) {
+        int safeHp = Math.max(1, hp);
+        this.maxHp = safeHp;
+        this.hp = safeHp;
     }
 
     /**
@@ -139,6 +155,9 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
      * @return 掉落道具；未触发时返回 null
      */
     public AbstractItem tryGenerateDropItem() {
+        if (dropDisabled) {
+            return null;
+        }
         ItemPoolType poolType = getDropItemPoolType();
         if (poolType == null) {
             return null;
@@ -159,6 +178,61 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
      */
     public List<BaseBullet> shoot() {
         return shootStrategy.shoot(this);
+    }
+
+    public boolean isDropDisabled() {
+        return dropDisabled;
+    }
+
+    public void markBombDestroyedForSettlement() {
+        dropDisabled = true;
+        bombDestroyedPendingSettlement = true;
+        vanish();
+    }
+
+    public boolean consumeBombDestroyedFlag() {
+        if (!bombDestroyedPendingSettlement) {
+            return false;
+        }
+        bombDestroyedPendingSettlement = false;
+        return true;
+    }
+
+    @Override
+    public void onBombActivated(BombEffect bombEffect) {
+        if (this instanceof BossEnemy) {
+            return;
+        }
+        if (this instanceof AceEnemy) {
+            decreaseHp(bombEffect.getAceDamage());
+            if (notValid()) {
+                markBombDestroyedForSettlement();
+            }
+            return;
+        }
+        markBombDestroyedForSettlement();
+    }
+
+    @Override
+    public void onFreezeActivated(FreezeEffect freezeEffect) {
+        if (this instanceof BossEnemy) {
+            return;
+        }
+        if (this instanceof MobEnemy) {
+            freezePermanently();
+            return;
+        }
+        if (this instanceof EliteEnemy) {
+            freezeTemporarily(freezeEffect.getEliteFreezeMillis());
+            return;
+        }
+        if (this instanceof ElitePlusEnemy) {
+            freezeTemporarily(freezeEffect.getElitePlusFreezeMillis());
+            return;
+        }
+        if (this instanceof AceEnemy) {
+            slowTemporarily(freezeEffect.getAceSlowFactor(), freezeEffect.getAceSlowMillis());
+        }
     }
 
 }
