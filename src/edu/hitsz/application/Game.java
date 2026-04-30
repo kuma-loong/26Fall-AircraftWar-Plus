@@ -56,7 +56,6 @@ public abstract class Game extends JPanel {
     private static final int ELITE_PLUS_SCORE = 30;
     private static final int ACE_SCORE = 50;
     private static final int BOSS_SCORE = 100;
-
     private int backGroundTop = 0;
     private final Timer timer;
     private final HeroAircraft heroAircraft;
@@ -97,15 +96,19 @@ public abstract class Game extends JPanel {
     protected boolean bossEnabled = true;
     protected int bossThreshold = 300;
 
-    protected Game(GameDifficulty difficulty) {
-        this.difficulty = difficulty == null ? GameDifficulty.NORMAL : difficulty;
-        ImageManager.setBackgroundByDifficulty(this.difficulty);
+    protected Game(GameSettings settings) {
+        GameSettings safeSettings = settings == null
+                ? new GameSettings(GameDifficulty.NORMAL, BackgroundProfile.defaultProfile(), false)
+                : settings;
+        this.difficulty = safeSettings.getDifficulty();
+        ImageManager.applyBackground(safeSettings);
         this.heroAircraft = HeroAircraft.getInstance();
         this.heroAircraft.prepareForNewGame();
         this.enemyAircrafts = new LinkedList<>();
         this.heroBullets = new LinkedList<>();
         this.enemyBullets = new LinkedList<>();
         this.items = new LinkedList<>();
+        setSize(GameViewport.getWidth(), GameViewport.getHeight());
         new HeroController(this, heroAircraft);
         this.timer = new Timer(TIME_INTERVAL, e -> action());
     }
@@ -352,8 +355,8 @@ public abstract class Game extends JPanel {
     }
 
     private void spawnCommonEnemyAction() {
-        int locationX = (int) (Math.random() * (Main.WINDOW_WIDTH - ENEMY_SPAWN_X_MARGIN)) + ENEMY_SPAWN_X_MARGIN / 2;
-        int locationY = (int) (Math.random() * Main.WINDOW_HEIGHT * ENEMY_SPAWN_TOP_RATIO);
+        int locationX = (int) (Math.random() * (GameViewport.getWidth() - ENEMY_SPAWN_X_MARGIN)) + ENEMY_SPAWN_X_MARGIN / 2;
+        int locationY = (int) (Math.random() * GameViewport.getHeight() * ENEMY_SPAWN_TOP_RATIO);
         AbstractAircraft enemyAircraft = createEnemyByWeight(locationX, locationY);
         configureEnemyOnSpawn(enemyAircraft);
         enemyAircrafts.add(enemyAircraft);
@@ -364,7 +367,7 @@ public abstract class Game extends JPanel {
     }
 
     private void spawnBossAction() {
-        AbstractAircraft bossEnemy = bossEnemyFactory.createEnemy(Main.WINDOW_WIDTH / 2, BOSS_SPAWN_Y);
+        AbstractAircraft bossEnemy = bossEnemyFactory.createEnemy(GameViewport.getWidth() / 2, BOSS_SPAWN_Y);
         configureEnemyOnSpawn(bossEnemy);
         bossSpawnCount++;
         int scaledBossHp = bossEnemy.getMaxHp() + getBossHpBonusPerSpawn(bossSpawnCount);
@@ -441,13 +444,13 @@ public abstract class Game extends JPanel {
             int attempts = 0;
             do {
                 int offsetX = (int) Math.round((Math.random() * 2 - 1) * BOSS_DROP_X_SPREAD);
-                dropX = clampToWindow(centerX + offsetX, ITEM_SPAWN_MARGIN, Main.WINDOW_WIDTH - ITEM_SPAWN_MARGIN);
+                dropX = clampToWindow(centerX + offsetX, ITEM_SPAWN_MARGIN, GameViewport.getWidth() - ITEM_SPAWN_MARGIN);
                 attempts++;
             } while (hasCloseDropX(dropXs, i, dropX) && attempts < 10);
             dropXs[i] = dropX;
 
             int yJitter = (int) Math.round((Math.random() * 2 - 1) * BOSS_DROP_Y_JITTER);
-            int dropY = clampToWindow(centerY + yJitter, ITEM_SPAWN_MARGIN, Main.WINDOW_HEIGHT - ITEM_SPAWN_MARGIN);
+            int dropY = clampToWindow(centerY + yJitter, ITEM_SPAWN_MARGIN, GameViewport.getHeight() - ITEM_SPAWN_MARGIN);
             items.add(ItemSimpleFactory.createItem(ItemPoolType.ACE_POOL, dropX, dropY));
         }
     }
@@ -505,10 +508,10 @@ public abstract class Game extends JPanel {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        g.drawImage(ImageManager.BACKGROUND_IMAGE, 0, backGroundTop - Main.WINDOW_HEIGHT, null);
+        g.drawImage(ImageManager.BACKGROUND_IMAGE, 0, backGroundTop - GameViewport.getHeight(), null);
         g.drawImage(ImageManager.BACKGROUND_IMAGE, 0, backGroundTop, null);
         backGroundTop += 1;
-        if (backGroundTop == Main.WINDOW_HEIGHT) {
+        if (backGroundTop == GameViewport.getHeight()) {
             backGroundTop = 0;
         }
 

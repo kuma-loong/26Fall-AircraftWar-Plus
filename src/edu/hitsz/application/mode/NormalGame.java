@@ -1,6 +1,7 @@
 package edu.hitsz.application.mode;
 
 import edu.hitsz.application.Game;
+import edu.hitsz.application.GameSettings;
 import edu.hitsz.dao.GameDifficulty;
 
 /**
@@ -9,8 +10,8 @@ import edu.hitsz.dao.GameDifficulty;
 public class NormalGame extends Game {
     private static final int UPGRADE_INTERVAL = 300;
 
-    public NormalGame() {
-        super(GameDifficulty.NORMAL);
+    public NormalGame(GameSettings settings) {
+        super(settings == null ? new GameSettings(GameDifficulty.NORMAL, null, false) : settings);
         initializeDifficulty();
         finalizeDifficultyInitialization();
     }

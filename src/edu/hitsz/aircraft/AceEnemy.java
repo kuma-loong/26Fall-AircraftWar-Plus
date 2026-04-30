@@ -1,6 +1,6 @@
 package edu.hitsz.aircraft;
 
-import edu.hitsz.application.Main;
+import edu.hitsz.application.GameViewport;
 import edu.hitsz.factory.ItemPoolType;
 import edu.hitsz.shootstrategy.ScatterShootStrategy;
 
@@ -25,7 +25,7 @@ public class AceEnemy extends AbstractAircraft {
     @Override
     public void forward() {
         super.forward();
-        if (locationY >= Main.WINDOW_HEIGHT) {
+        if (locationY >= GameViewport.getHeight()) {
             vanish();
         }
     }

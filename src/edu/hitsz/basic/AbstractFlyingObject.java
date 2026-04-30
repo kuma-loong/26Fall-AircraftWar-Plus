@@ -1,8 +1,8 @@
 package edu.hitsz.basic;
 
 import edu.hitsz.aircraft.AbstractAircraft;
+import edu.hitsz.application.GameViewport;
 import edu.hitsz.application.ImageManager;
-import edu.hitsz.application.Main;
 
 import java.awt.image.BufferedImage;
 
@@ -56,7 +56,7 @@ public abstract class AbstractFlyingObject {
         int effectiveSpeedY = getEffectiveSpeed(speedY);
         locationX += effectiveSpeedX;
         locationY += effectiveSpeedY;
-        if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
+        if (locationX <= 0 || locationX >= GameViewport.getWidth()) {
             // 横向超出边界后反向
             speedX = -speedX;
         }

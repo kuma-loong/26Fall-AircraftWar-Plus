@@ -1,6 +1,6 @@
 package edu.hitsz.aircraft;
 
-import edu.hitsz.application.Main;
+import edu.hitsz.application.GameViewport;
 import edu.hitsz.factory.ItemPoolType;
 import edu.hitsz.shootstrategy.CircleShootStrategy;
 
@@ -23,7 +23,7 @@ public class BossEnemy extends AbstractAircraft {
     @Override
     public void forward() {
         locationX += speedX;
-        if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
+        if (locationX <= 0 || locationX >= GameViewport.getWidth()) {
             speedX = -speedX;
         }
     }

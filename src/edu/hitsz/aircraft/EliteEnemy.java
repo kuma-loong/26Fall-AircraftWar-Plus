@@ -1,6 +1,6 @@
 package edu.hitsz.aircraft;
 
-import edu.hitsz.application.Main;
+import edu.hitsz.application.GameViewport;
 import edu.hitsz.shootstrategy.StraightShootStrategy;
 
 /**
@@ -22,7 +22,7 @@ public class EliteEnemy extends AbstractAircraft {
     @Override
     public void forward() {
         super.forward();
-        if (locationY >= Main.WINDOW_HEIGHT) {
+        if (locationY >= GameViewport.getHeight()) {
             vanish();
         }
     }

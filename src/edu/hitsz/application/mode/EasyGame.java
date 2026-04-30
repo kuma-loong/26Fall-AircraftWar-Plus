@@ -1,6 +1,7 @@
 package edu.hitsz.application.mode;
 
 import edu.hitsz.application.Game;
+import edu.hitsz.application.GameSettings;
 import edu.hitsz.dao.GameDifficulty;
 
 /**
@@ -8,8 +9,8 @@ import edu.hitsz.dao.GameDifficulty;
  */
 public class EasyGame extends Game {
 
-    public EasyGame() {
-        super(GameDifficulty.EASY);
+    public EasyGame(GameSettings settings) {
+        super(settings == null ? new GameSettings(GameDifficulty.EASY, null, false) : settings);
         initializeDifficulty();
         finalizeDifficultyInitialization();
     }

@@ -1,7 +1,7 @@
 package edu.hitsz.item;
 
 import edu.hitsz.aircraft.HeroAircraft;
-import edu.hitsz.application.Main;
+import edu.hitsz.application.GameViewport;
 import edu.hitsz.basic.AbstractFlyingObject;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public abstract class AbstractItem extends AbstractFlyingObject {
     @Override
     public void forward() {
         super.forward();
-        if (locationY >= Main.WINDOW_HEIGHT) {
+        if (locationY >= GameViewport.getHeight()) {
             vanish();
         }
     }

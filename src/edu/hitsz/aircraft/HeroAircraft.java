@@ -1,7 +1,7 @@
 package edu.hitsz.aircraft;
 
 import edu.hitsz.application.ImageManager;
-import edu.hitsz.application.Main;
+import edu.hitsz.application.GameViewport;
 import edu.hitsz.shootstrategy.CircleShootStrategy;
 import edu.hitsz.shootstrategy.ScatterShootStrategy;
 import edu.hitsz.shootstrategy.StraightShootStrategy;
@@ -37,8 +37,8 @@ public class HeroAircraft extends AbstractAircraft {
             synchronized (HeroAircraft.class) {
                 if (instance == null) {
                     instance = new HeroAircraft(
-                            Main.WINDOW_WIDTH / 2,
-                            Main.WINDOW_HEIGHT - ImageManager.HERO_IMAGE.getHeight(),
+                            GameViewport.getWidth() / 2,
+                            GameViewport.getHeight() - ImageManager.HERO_IMAGE.getHeight(),
                             0,
                             -10,
                             100
@@ -62,7 +62,7 @@ public class HeroAircraft extends AbstractAircraft {
         fireEffectVersion++;
         this.hp = this.maxHp;
         this.isValid = true;
-        this.setLocation(Main.WINDOW_WIDTH / 2, Main.WINDOW_HEIGHT - ImageManager.HERO_IMAGE.getHeight());
+        this.setLocation(GameViewport.getWidth() / 2, GameViewport.getHeight() - ImageManager.HERO_IMAGE.getHeight());
         this.setDefaultShootStrategy();
     }
 

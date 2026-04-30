@@ -17,10 +17,17 @@ import edu.hitsz.item.FreezeItem;
 import edu.hitsz.item.SuperFireItem;
 
 import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,6 +43,7 @@ public class ImageManager {
      */
     private static final Map<String, BufferedImage> CLASSNAME_IMAGE_MAP = new HashMap<>();
     private static final String IMAGE_DIRECTORY = "src/images/";
+    private static final String CUSTOM_BACKGROUND_DIRECTORY = IMAGE_DIRECTORY + "custom/";
 
     public static BufferedImage BACKGROUND_IMAGE;
     public static BufferedImage HERO_IMAGE;
@@ -103,6 +111,61 @@ public class ImageManager {
     }
 
     /**
+     * 获取开始菜单可选背景列表。
+     * 默认背景始终在首位，其余条目来自自定义目录扫描结果。
+     *
+     * @return 背景配置列表
+     */
+    public static List<BackgroundProfile> getAvailableBackgroundProfiles() {
+        List<BackgroundProfile> profiles = new ArrayList<>();
+        profiles.add(BackgroundProfile.defaultProfile());
+        File directory = new File(CUSTOM_BACKGROUND_DIRECTORY);
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return profiles;
+        }
+        List<BackgroundProfile> customProfiles = new ArrayList<>();
+        for (File file : files) {
+            if (!file.isFile() || !isSupportedBackgroundFile(file.getName())) {
+                continue;
+            }
+            try {
+                BufferedImage image = loadImage(file.getPath());
+                if (image != null) {
+                    customProfiles.add(BackgroundProfile.customProfile(
+                            file.getName(),
+                            file.getPath(),
+                            image.getWidth(),
+                            image.getHeight()
+                    ));
+                }
+            } catch (IOException ignored) {
+                // 损坏图片不加入菜单，避免影响游戏启动。
+            }
+        }
+        customProfiles.sort(Comparator.comparing(BackgroundProfile::getDisplayName, String.CASE_INSENSITIVE_ORDER));
+        profiles.addAll(customProfiles);
+        return profiles;
+    }
+
+    /**
+     * 按启动配置加载背景图。
+     *
+     * @param settings 当前对局设置
+     */
+    public static void applyBackground(GameSettings settings) {
+        if (settings == null || settings.getBackgroundProfile().isDefaultProfile()) {
+            setBackgroundByDifficulty(settings == null ? null : settings.getDifficulty());
+            return;
+        }
+        try {
+            BACKGROUND_IMAGE = scaleToViewport(loadImage(settings.getBackgroundProfile().getImagePath()));
+        } catch (IOException exception) {
+            setBackgroundByDifficulty(settings.getDifficulty());
+        }
+    }
+
+    /**
      * 按难度切换背景图，不改变其他资源加载方式。
      * @param difficulty 当前难度
      */
@@ -114,10 +177,10 @@ public class ImageManager {
             case HARD -> "bg5.jpg";
         };
         try {
-            BACKGROUND_IMAGE = loadImage(backgroundFileName);
+            BACKGROUND_IMAGE = scaleToViewport(loadImage(IMAGE_DIRECTORY + backgroundFileName));
         } catch (IOException exception) {
             try {
-                BACKGROUND_IMAGE = loadImage("bg.jpg");
+                BACKGROUND_IMAGE = scaleToViewport(loadImage(IMAGE_DIRECTORY + "bg.jpg"));
             } catch (IOException ignored) {
                 // 图片资源在静态初始化阶段已校验，此处保底不再退出程序。
             }
@@ -125,7 +188,37 @@ public class ImageManager {
     }
 
     private static BufferedImage loadImage(String fileName) throws IOException {
-        return ImageIO.read(new FileInputStream(IMAGE_DIRECTORY + fileName));
+        File imageFile = new File(fileName);
+        if (!imageFile.exists()) {
+            imageFile = new File(IMAGE_DIRECTORY + fileName);
+        }
+        try (InputStream inputStream = new FileInputStream(imageFile)) {
+            return ImageIO.read(inputStream);
+        }
+    }
+
+    private static BufferedImage scaleToViewport(BufferedImage source) {
+        if (source == null) {
+            return null;
+        }
+        int targetWidth = GameViewport.getWidth();
+        int targetHeight = GameViewport.getHeight();
+        if (source.getWidth() == targetWidth && source.getHeight() == targetHeight) {
+            return source;
+        }
+        BufferedImage scaledImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = scaledImage.createGraphics();
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        graphics.drawImage(source, 0, 0, targetWidth, targetHeight, null);
+        graphics.dispose();
+        return scaledImage;
+    }
+
+    private static boolean isSupportedBackgroundFile(String fileName) {
+        String lowerCaseName = fileName.toLowerCase();
+        return lowerCaseName.endsWith(".png")
+                || lowerCaseName.endsWith(".jpg")
+                || lowerCaseName.endsWith(".jpeg");
     }
 
 }

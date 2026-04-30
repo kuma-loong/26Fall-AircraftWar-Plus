@@ -31,13 +31,10 @@ public class GameMainFrame extends JFrame {
 
     public GameMainFrame() {
         setTitle("Aircraft War");
-        setSize(Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
         setResizable(false);
+        applyWindowBounds();
 
         // 设置窗口的大小和位置,居中放置
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds(((int) screenSize.getWidth() - Main.WINDOW_WIDTH) / 2, 0,
-                Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         cardLayout = new CardLayout();
@@ -54,10 +51,14 @@ public class GameMainFrame extends JFrame {
 
     /**
      * 启动游戏界面
-     * @param difficulty 选择的游戏难度
+     * @param settings 当前启动配置
      */
-    public void startGame(GameDifficulty difficulty) {
-        replaceCurrentGame(createGame(difficulty));
+    public void startGame(GameSettings settings) {
+        GameSettings safeSettings = settings == null
+                ? new GameSettings(GameDifficulty.NORMAL, BackgroundProfile.defaultProfile(), false)
+                : settings;
+        configureViewport(safeSettings);
+        replaceCurrentGame(createGame(safeSettings));
         currentGame.setOnGameOver(this::handleGameOver);
         cardLayout.show(mainCardPanel, GAME_CARD);
         currentGame.start();
@@ -98,12 +99,30 @@ public class GameMainFrame extends JFrame {
         mainCardPanel.repaint();
     }
 
-    private Game createGame(GameDifficulty difficulty) {
-        GameDifficulty safeDifficulty = difficulty == null ? GameDifficulty.NORMAL : difficulty;
+    private Game createGame(GameSettings settings) {
+        GameDifficulty safeDifficulty = settings.getDifficulty();
         return switch (safeDifficulty) {
-            case EASY -> new EasyGame();
-            case NORMAL -> new NormalGame();
-            case HARD -> new HardGame();
+            case EASY -> new EasyGame(settings);
+            case NORMAL -> new NormalGame(settings);
+            case HARD -> new HardGame(settings);
         };
+    }
+
+    private void configureViewport(GameSettings settings) {
+        BackgroundProfile profile = settings.getBackgroundProfile();
+        if (settings.isUseImageSizeAsViewport() && profile.supportsViewportResize()) {
+            GameViewport.configure(profile.getWidth(), profile.getHeight());
+        } else {
+            GameViewport.reset();
+        }
+        applyWindowBounds();
+    }
+
+    private void applyWindowBounds() {
+        int width = GameViewport.getWidth();
+        int height = GameViewport.getHeight();
+        setSize(width, height);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds(((int) screenSize.getWidth() - width) / 2, 0, width, height);
     }
 }
