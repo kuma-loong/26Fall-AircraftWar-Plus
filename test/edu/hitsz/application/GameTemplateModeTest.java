@@ -4,6 +4,7 @@ import edu.hitsz.aircraft.AbstractAircraft;
 import edu.hitsz.aircraft.BossEnemy;
 import edu.hitsz.aircraft.HeroAircraft;
 import edu.hitsz.aircraft.MobEnemy;
+import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.application.mode.EasyGame;
 import edu.hitsz.application.mode.HardGame;
 import edu.hitsz.application.mode.NormalGame;
@@ -133,6 +134,50 @@ class GameTemplateModeTest {
         hardGame.debugConfigureEnemyOnSpawn(mobEnemy);
 
         assertEquals(30, mobEnemy.getHp());
+    }
+
+    @Test
+    @DisplayName("Combo grants bonus score on fifth kill")
+    void shouldApplyComboBonusScore() {
+        NormalGame game = new NormalGame();
+        HeroAircraft heroAircraft = HeroAircraft.getInstance();
+        heroAircraft.prepareForNewGame();
+
+        for (int i = 0; i < 5; i++) {
+            game.getEnemyAircrafts().add(new MobEnemy(100 + i * 20, 120, 0, 10, 30));
+        }
+
+        game.debugActivateItem(new BombItem(100, 100, 0, 0));
+
+        assertEquals(52, game.getScore());
+    }
+
+    @Test
+    @DisplayName("Combo resets after hero is hit")
+    void shouldResetComboAfterHeroTakesDamage() {
+        NormalGame game = new NormalGame();
+        HeroAircraft heroAircraft = HeroAircraft.getInstance();
+        heroAircraft.prepareForNewGame();
+
+        for (int i = 0; i < 4; i++) {
+            game.getEnemyAircrafts().add(new MobEnemy(100 + i * 20, 120, 0, 10, 30));
+        }
+        game.debugActivateItem(new BombItem(100, 100, 0, 0));
+        assertEquals(40, game.getScore());
+
+        game.getEnemyBullets().add(new EnemyBullet(
+                heroAircraft.getLocationX(),
+                heroAircraft.getLocationY(),
+                0,
+                0,
+                1
+        ));
+        game.action();
+
+        game.getEnemyAircrafts().add(new MobEnemy(220, 120, 0, 10, 30));
+        game.debugActivateItem(new BombItem(100, 100, 0, 0));
+
+        assertEquals(50, game.getScore());
     }
 
     private void runFrames(Game game, int frameCount) {

@@ -9,6 +9,10 @@ import edu.hitsz.dao.GameDifficulty;
  */
 public class EasyGame extends Game {
 
+    public EasyGame() {
+        this(new GameSettings(GameDifficulty.EASY, null, false));
+    }
+
     public EasyGame(GameSettings settings) {
         super(settings == null ? new GameSettings(GameDifficulty.EASY, null, false) : settings);
         initializeDifficulty();

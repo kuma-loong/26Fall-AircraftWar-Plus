@@ -113,6 +113,7 @@ public abstract class Game extends JPanel {
         this.heroBullets = new LinkedList<>();
         this.enemyBullets = new LinkedList<>();
         this.items = new LinkedList<>();
+        setPreferredSize(new java.awt.Dimension(GameViewport.getWidth(), GameViewport.getHeight()));
         setSize(GameViewport.getWidth(), GameViewport.getHeight());
         new HeroController(this, heroAircraft);
         this.timer = new Timer(TIME_INTERVAL, e -> action());

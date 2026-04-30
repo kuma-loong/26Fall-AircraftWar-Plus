@@ -10,6 +10,10 @@ import edu.hitsz.dao.GameDifficulty;
 public class HardGame extends Game {
     private static final int UPGRADE_INTERVAL = 250;
 
+    public HardGame() {
+        this(new GameSettings(GameDifficulty.HARD, null, false));
+    }
+
     public HardGame(GameSettings settings) {
         super(settings == null ? new GameSettings(GameDifficulty.HARD, null, false) : settings);
         initializeDifficulty();

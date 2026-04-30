@@ -449,3 +449,32 @@
 - 游戏运行边界统一收口到 `GameViewport`，减少新增功能继续扩散固定窗口常量的风险。
 - 自定义背景加载失败存在回退路径，不会因单张资源异常导致程序退出。
 - 连击系统只接入 `Game` 的计分与 HUD，不侵入敌机、道具和难度类的职责边界。
+
+## 2026-04-30 创新功能修复（二）：模式启动回归与测试补齐
+
+### 需求来源
+- 用户反馈：选择游戏模式后未正常启动，并要求补充 JUnit 测试，采用测试驱动方式约束回归。
+
+### 本次修改
+1. 启动链路稳健性修复
+- `Game` 构造阶段补充 `setPreferredSize(...)`，避免切换 `CardLayout` 后游戏面板尺寸不稳定。
+- `GameMainFrame` 在替换游戏面板和调整视口后追加 `revalidate()` / `repaint()`，并请求游戏面板焦点。
+
+2. 兼容性修复
+- 为 `EasyGame`、`NormalGame`、`HardGame` 补回无参构造器，内部委托到 `GameSettings` 构造器。
+- 保持新启动配置接口能力的同时，兼容既有测试与默认实例化路径。
+
+3. 测试补齐
+- 更新 `GameTemplateModeTest`，恢复对默认难度构造器的覆盖。
+- 新增连击回归测试：
+  - 第 5 次连续击杀触发倍率加分；
+  - 英雄机受伤后连击立即清空。
+
+### 执行验证
+- 源码编译：
+  - `javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`
+- 测试编译：
+  - `find test -name "*.java" -print0 | xargs -0 javac -sourcepath test -encoding UTF-8 -cp lib/junit-platform-console-standalone-1.12.2.jar:/tmp/aircraftwar-build -d /tmp/aircraftwar-test`
+- JUnit：
+  - `java -jar lib/junit-platform-console-standalone-1.12.2.jar execute --class-path /tmp/aircraftwar-test:/tmp/aircraftwar-build --scan-class-path`
+- 结果：`23/23` 测试通过。

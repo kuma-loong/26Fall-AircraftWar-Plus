@@ -97,6 +97,7 @@ public class GameMainFrame extends JFrame {
         mainCardPanel.add(currentGame, GAME_CARD);
         mainCardPanel.revalidate();
         mainCardPanel.repaint();
+        currentGame.requestFocusInWindow();
     }
 
     private Game createGame(GameSettings settings) {
@@ -116,6 +117,8 @@ public class GameMainFrame extends JFrame {
             GameViewport.reset();
         }
         applyWindowBounds();
+        mainCardPanel.revalidate();
+        mainCardPanel.repaint();
     }
 
     private void applyWindowBounds() {
