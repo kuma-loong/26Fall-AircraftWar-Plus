@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -119,7 +122,7 @@ public class ImageManager {
     public static List<BackgroundProfile> getAvailableBackgroundProfiles() {
         List<BackgroundProfile> profiles = new ArrayList<>();
         profiles.add(BackgroundProfile.defaultProfile());
-        File directory = new File(CUSTOM_BACKGROUND_DIRECTORY);
+        File directory = getCustomBackgroundDirectory();
         File[] files = directory.listFiles();
         if (files == null) {
             return profiles;
@@ -187,6 +190,44 @@ public class ImageManager {
         }
     }
 
+    /**
+     * 将外部图片导入到自定义背景目录。
+     * 若存在同名文件，则自动追加序号避免覆盖。
+     *
+     * @param sourceFile 外部图片文件
+     * @return 导入后的目标文件
+     * @throws IOException 文件复制失败或图片格式不支持
+     */
+    public static File importCustomBackground(File sourceFile) throws IOException {
+        if (sourceFile == null || !sourceFile.isFile() || !isSupportedBackgroundFile(sourceFile.getName())) {
+            throw new IOException("Unsupported background file.");
+        }
+        File customDirectory = getCustomBackgroundDirectory();
+        if (!customDirectory.exists() && !customDirectory.mkdirs()) {
+            throw new IOException("Failed to create custom background directory.");
+        }
+        File targetFile = resolveImportTargetFile(sourceFile.getName(), customDirectory);
+        Files.copy(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        return targetFile;
+    }
+
+    static File resolveImportTargetFile(String fileName, File directory) {
+        if (directory == null) {
+            return new File(fileName);
+        }
+        String safeFileName = fileName == null || fileName.isBlank() ? "background.png" : fileName;
+        int dotIndex = safeFileName.lastIndexOf('.');
+        String baseName = dotIndex > 0 ? safeFileName.substring(0, dotIndex) : safeFileName;
+        String extension = dotIndex > 0 ? safeFileName.substring(dotIndex) : "";
+        File targetFile = new File(directory, safeFileName);
+        int index = 1;
+        while (targetFile.exists()) {
+            targetFile = new File(directory, baseName + "_" + index + extension);
+            index++;
+        }
+        return targetFile;
+    }
+
     private static BufferedImage loadImage(String fileName) throws IOException {
         File imageFile = new File(fileName);
         if (!imageFile.exists()) {
@@ -219,6 +260,10 @@ public class ImageManager {
         return lowerCaseName.endsWith(".png")
                 || lowerCaseName.endsWith(".jpg")
                 || lowerCaseName.endsWith(".jpeg");
+    }
+
+    private static File getCustomBackgroundDirectory() {
+        return Path.of(CUSTOM_BACKGROUND_DIRECTORY).toFile();
     }
 
 }

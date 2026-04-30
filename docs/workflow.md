@@ -508,3 +508,34 @@
 - JUnit：
   - `java -jar lib/junit-platform-console-standalone-1.12.2.jar execute --class-path /tmp/aircraftwar-test:/tmp/aircraftwar-build --scan-class-path`
 - 结果：`26/26` 测试通过。
+
+## 2026-04-30 创新功能增强（四）：文件浏览器导入自定义背景
+
+### 需求来源
+- 用户要求：允许通过文件浏览器选择背景图片导入，实际落地为复制一份图片到 `custom` 目录，之后可在菜单中反复选择使用；同时要求保持跨平台、最小侵入。
+
+### 本次修改
+1. 菜单最小扩展
+- `StartMenuPanel` 新增“导入背景图片”按钮。
+- 点击后使用 Swing `JFileChooser` 选择 `png/jpg/jpeg` 图片。
+- 导入成功后自动刷新背景列表，并选中刚导入的图片。
+
+2. 导入逻辑收口
+- `ImageManager` 新增 `importCustomBackground(...)`，统一负责：
+  - 校验扩展名
+  - 创建 `src/images/custom/` 目录
+  - 复制文件到项目内
+  - 同名文件自动追加序号，避免覆盖
+- UI 层只负责文件选择与错误提示，不直接处理复制细节。
+
+3. 测试补齐
+- 新增 `ImageManagerTest`，验证同名导入时目标文件名自动追加后缀。
+
+### 执行验证
+- 源码编译：
+  - `javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`
+- 测试编译：
+  - `find test -name "*.java" -print0 | xargs -0 javac -sourcepath test -encoding UTF-8 -cp lib/junit-platform-console-standalone-1.12.2.jar:/tmp/aircraftwar-build -d /tmp/aircraftwar-test`
+- JUnit：
+  - `java -jar lib/junit-platform-console-standalone-1.12.2.jar execute --class-path /tmp/aircraftwar-test:/tmp/aircraftwar-build --scan-class-path`
+- 结果：`27/27` 测试通过。
