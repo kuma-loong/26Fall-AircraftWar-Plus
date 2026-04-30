@@ -56,6 +56,9 @@ public abstract class Game extends JPanel {
     private static final int ELITE_PLUS_SCORE = 30;
     private static final int ACE_SCORE = 50;
     private static final int BOSS_SCORE = 100;
+    private static final int COMBO_EXPIRE_FRAMES = 75;
+    private static final int COMBO_HEAL_STEP = 10;
+    private static final int COMBO_HEAL_AMOUNT = 10;
     private int backGroundTop = 0;
     private final Timer timer;
     private final HeroAircraft heroAircraft;
@@ -77,6 +80,8 @@ public abstract class Game extends JPanel {
     private int enemyShootCounter = 0;
     private int frameCount = 0;
     private int score = 0;
+    private int comboCount = 0;
+    private int comboExpireFrame = -1;
     private int bossSpawnCount = 0;
     private boolean gameOverFlag = false;
     private boolean gameOverHandled = false;
@@ -130,6 +135,7 @@ public abstract class Game extends JPanel {
         if (gameOverFlag) {
             return;
         }
+        refreshComboState();
         spawnEnemyAction();
         shootAction();
         bulletsMoveAction();
@@ -239,6 +245,7 @@ public abstract class Game extends JPanel {
             if (heroAircraft.crash(enemyBullet)) {
                 heroAircraft.decreaseHp(enemyBullet.getPower());
                 enemyBullet.vanish();
+                resetCombo();
             }
         }
 
@@ -268,6 +275,7 @@ public abstract class Game extends JPanel {
             if (enemyAircraft.crash(heroAircraft) || heroAircraft.crash(enemyAircraft)) {
                 enemyAircraft.vanish();
                 heroAircraft.decreaseHp(Integer.MAX_VALUE);
+                resetCombo();
             }
         }
 
@@ -409,7 +417,7 @@ public abstract class Game extends JPanel {
 
     private void handleEnemyDestroyed(AbstractAircraft enemyAircraft) {
         if (enemyAircraft instanceof BossEnemy) {
-            score += BOSS_SCORE;
+            registerEnemyDestroyed(BOSS_SCORE);
             bossActive = false;
             dropBossItems(enemyAircraft);
             if (!gameOverFlag) {
@@ -418,13 +426,13 @@ public abstract class Game extends JPanel {
             return;
         }
         if (enemyAircraft instanceof AceEnemy) {
-            score += ACE_SCORE;
+            registerEnemyDestroyed(ACE_SCORE);
         } else if (enemyAircraft instanceof ElitePlusEnemy) {
-            score += ELITE_PLUS_SCORE;
+            registerEnemyDestroyed(ELITE_PLUS_SCORE);
         } else if (enemyAircraft instanceof EliteEnemy) {
-            score += ELITE_SCORE;
+            registerEnemyDestroyed(ELITE_SCORE);
         } else if (enemyAircraft instanceof MobEnemy) {
-            score += MOB_SCORE;
+            registerEnemyDestroyed(MOB_SCORE);
         }
 
         if (!enemyAircraft.isDropDisabled()) {
@@ -453,6 +461,51 @@ public abstract class Game extends JPanel {
             int dropY = clampToWindow(centerY + yJitter, ITEM_SPAWN_MARGIN, GameViewport.getHeight() - ITEM_SPAWN_MARGIN);
             items.add(ItemSimpleFactory.createItem(ItemPoolType.ACE_POOL, dropX, dropY));
         }
+    }
+
+    private void registerEnemyDestroyed(int baseScore) {
+        advanceCombo();
+        score += applyComboMultiplier(baseScore);
+    }
+
+    private void advanceCombo() {
+        if (comboCount > 0 && frameCount <= comboExpireFrame) {
+            comboCount++;
+        } else {
+            comboCount = 1;
+        }
+        comboExpireFrame = frameCount + COMBO_EXPIRE_FRAMES;
+        if (comboCount % COMBO_HEAL_STEP == 0) {
+            heroAircraft.increaseHp(COMBO_HEAL_AMOUNT);
+        }
+    }
+
+    private int applyComboMultiplier(int baseScore) {
+        return (int) Math.round(baseScore * getComboMultiplier());
+    }
+
+    private double getComboMultiplier() {
+        if (comboCount >= 20) {
+            return 2.0;
+        }
+        if (comboCount >= 10) {
+            return 1.5;
+        }
+        if (comboCount >= 5) {
+            return 1.2;
+        }
+        return 1.0;
+    }
+
+    private void refreshComboState() {
+        if (comboCount > 0 && frameCount > comboExpireFrame) {
+            resetCombo();
+        }
+    }
+
+    private void resetCombo() {
+        comboCount = 0;
+        comboExpireFrame = -1;
     }
 
     private boolean hasCloseDropX(int[] dropXs, int size, int candidateX) {
@@ -541,6 +594,10 @@ public abstract class Game extends JPanel {
         g.drawString("SCORE: " + score, x, y);
         y += 20;
         g.drawString("LIFE: " + heroAircraft.getHp(), x, y);
+        if (comboCount > 1) {
+            y += 20;
+            g.drawString("COMBO: x" + comboCount, x, y);
+        }
     }
 
     public final GameDifficulty getDifficulty() {
