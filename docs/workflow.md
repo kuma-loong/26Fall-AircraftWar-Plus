@@ -270,8 +270,49 @@
 
 ### 本次修改
 1. 音频模块
-- 新增 `application/MusicThread`，基于 `Thread` 实现单次播放、循环播放和中途停止。
-- 新增 `application/AudioManager`，统一封装普通 BGM、Boss BGM 与短音效播放。
+- 新增 `application/audio/MusicThread`，基于 `Thread` 实现单次播放、循环播放和中途停止。
+- 新增 `application/audio/AudioManager`，统一封装普通 BGM、Boss BGM 与短音效播放。
+
+## 2026-04-30 application 包分层整理
+
+### 需求来源
+- 用户要求：整理 `application` 包结构，在不破坏现有实验约束的前提下改为更规范的项目组织方式，并完成测试与提交。
+
+### 本次修改
+1. 子包拆分
+- 保留 `application` 顶层中的入口与主流程类：
+  - `Main`
+  - `Game`
+  - `GameMainFrame`
+  - `HeroController`
+  - `ImageManager`
+- 新增 `application/mode`：
+  - `EasyGame`
+  - `NormalGame`
+  - `HardGame`
+  - `GameOverInfo`
+- 新增 `application/ui`：
+  - `StartMenuPanel`
+  - `LeaderboardPanel`
+- 新增 `application/audio`：
+  - `AudioManager`
+  - `MusicThread`
+
+2. 引用与测试同步
+- 更新 `Game`、`GameMainFrame` 的 import。
+- 更新 `GameTemplateModeTest` 对难度子类的引用。
+- 同步修正文档中的旧包路径描述。
+
+### 验证与 Code Review
+- 编译通过：
+  - `javac -encoding UTF-8 -d out/production $(find src/edu/hitsz -name "*.java")`
+- 测试通过：
+  - `find test -name "*.java" -print0 | xargs -0 javac -encoding UTF-8 -cp lib/junit-platform-console-standalone-1.12.2.jar:out/production -d out/test`
+  - `java -jar lib/junit-platform-console-standalone-1.12.2.jar --class-path out/test:out/production --scan-class-path`
+- 结论：
+  - 包职责边界更清晰，未改动游戏业务逻辑；
+  - `Game` 模板方法结构保持不变；
+  - UI、音频、难度实现已从顶层 `application` 分离，降低继续堆叠类的风险。
 
 2. 游戏流程接线
 - `Game.action()` 启动普通 BGM。

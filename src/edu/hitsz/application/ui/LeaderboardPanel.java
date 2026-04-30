@@ -1,5 +1,6 @@
-package edu.hitsz.application;
+package edu.hitsz.application.ui;
 
+import edu.hitsz.application.GameMainFrame;
 import edu.hitsz.dao.FileScoreRecordDao;
 import edu.hitsz.dao.GameDifficulty;
 import edu.hitsz.dao.ScoreBoardService;

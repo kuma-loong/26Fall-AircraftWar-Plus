@@ -22,6 +22,8 @@ import edu.hitsz.item.AbstractItem;
 import edu.hitsz.item.BombItem;
 import edu.hitsz.item.FreezeItem;
 import edu.hitsz.item.ItemEffectObserver;
+import edu.hitsz.application.audio.AudioManager;
+import edu.hitsz.application.mode.GameOverInfo;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -538,81 +540,81 @@ public abstract class Game extends JPanel {
         g.drawString("LIFE: " + heroAircraft.getHp(), x, y);
     }
 
-    GameDifficulty getDifficulty() {
+    public final GameDifficulty getDifficulty() {
         return difficulty;
     }
 
-    int getEnemyMaxNumber() {
+    public final int getEnemyMaxNumber() {
         return enemyMaxNumber;
     }
 
-    double getHeroShootCycle() {
+    public final double getHeroShootCycle() {
         return heroShootCycle;
     }
 
-    double getEnemyShootCycle() {
+    public final double getEnemyShootCycle() {
         return enemyShootCycle;
     }
 
-    double getEnemySpawnCycle() {
+    public final double getEnemySpawnCycle() {
         return enemySpawnCycle;
     }
 
-    double getEnemyHpScale() {
+    public final double getEnemyHpScale() {
         return enemyHpScale;
     }
 
-    double getEnemySpeedScale() {
+    public final double getEnemySpeedScale() {
         return enemySpeedScale;
     }
 
-    boolean isBossEnabled() {
+    public final boolean isBossEnabled() {
         return bossEnabled;
     }
 
-    int getBossThreshold() {
+    public final int getBossThreshold() {
         return bossThreshold;
     }
 
-    int getScore() {
+    public final int getScore() {
         return score;
     }
 
-    int getBossSpawnCount() {
+    public final int getBossSpawnCount() {
         return bossSpawnCount;
     }
 
-    List<AbstractAircraft> getEnemyAircrafts() {
+    public final List<AbstractAircraft> getEnemyAircrafts() {
         return enemyAircrafts;
     }
 
-    List<BaseBullet> getEnemyBullets() {
+    public final List<BaseBullet> getEnemyBullets() {
         return enemyBullets;
     }
 
-    List<AbstractItem> getItems() {
+    public final List<AbstractItem> getItems() {
         return items;
     }
 
-    void debugSetScore(int score) {
+    public final void debugSetScore(int score) {
         this.score = Math.max(0, score);
     }
 
-    void debugForceSpawnBoss() {
+    public final void debugForceSpawnBoss() {
         if (bossEnabled && !bossActive) {
             spawnBossAction();
         }
     }
 
-    void debugPostProcess() {
+    public final void debugPostProcess() {
         postProcessAction();
     }
 
-    void debugActivateItem(AbstractItem item) {
+    public final void debugActivateItem(AbstractItem item) {
         activateItem(item);
     }
 
-    void debugConfigureEnemyOnSpawn(AbstractAircraft enemyAircraft) {
+    public final void debugConfigureEnemyOnSpawn(AbstractAircraft enemyAircraft) {
         configureEnemyOnSpawn(enemyAircraft);
     }
 }

@@ -1,4 +1,4 @@
-package edu.hitsz.application;
+package edu.hitsz.application.audio;
 
 /**
  * 音频管理器，统一封装循环音乐与短音效播放。

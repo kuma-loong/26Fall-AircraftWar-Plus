@@ -1,11 +1,11 @@
 # Feature：实验五非 UI 功能（音频管理与限时火力）
 
 ## 1. 音频模块
-- 新增 `edu.hitsz.application.MusicThread`：
+- 新增 `edu.hitsz.application.audio.MusicThread`：
   - 继承 `Thread`；
   - 支持单次播放、循环播放；
   - 提供 `stopMusic()` 中途停止。
-- 新增 `edu.hitsz.application.AudioManager`：
+- 新增 `edu.hitsz.application.audio.AudioManager`：
   - 统一管理普通 BGM、Boss BGM、击中音效、炸弹音效、补给音效、结束音效；
   - 音频异常不抛回主循环，避免影响游戏运行。
 

@@ -1,5 +1,6 @@
-package edu.hitsz.application;
+package edu.hitsz.application.mode;
 
+import edu.hitsz.application.Game;
 import edu.hitsz.dao.GameDifficulty;
 
 /**

@@ -1,4 +1,4 @@
-package edu.hitsz.application;
+package edu.hitsz.application.audio;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;

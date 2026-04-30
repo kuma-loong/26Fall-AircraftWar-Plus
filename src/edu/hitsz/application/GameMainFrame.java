@@ -1,5 +1,11 @@
 package edu.hitsz.application;
 
+import edu.hitsz.application.mode.EasyGame;
+import edu.hitsz.application.mode.GameOverInfo;
+import edu.hitsz.application.mode.HardGame;
+import edu.hitsz.application.mode.NormalGame;
+import edu.hitsz.application.ui.LeaderboardPanel;
+import edu.hitsz.application.ui.StartMenuPanel;
 import edu.hitsz.dao.FileScoreRecordDao;
 import edu.hitsz.dao.GameDifficulty;
 import edu.hitsz.dao.ScoreBoardService;
