@@ -3,6 +3,7 @@ package edu.hitsz.application;
 import edu.hitsz.aircraft.AbstractAircraft;
 import edu.hitsz.aircraft.BossEnemy;
 import edu.hitsz.aircraft.HeroAircraft;
+import edu.hitsz.aircraft.MobEnemy;
 import edu.hitsz.item.BombItem;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,11 +46,11 @@ class GameTemplateModeTest {
         assertEquals(300, normalGame.getBossThreshold());
 
         assertEquals(6, hardGame.getEnemyMaxNumber());
-        assertEquals(18.0, hardGame.getHeroShootCycle());
-        assertEquals(18.0, hardGame.getEnemyShootCycle());
+        assertEquals(14.0, hardGame.getHeroShootCycle());
+        assertEquals(19.0, hardGame.getEnemyShootCycle());
         assertEquals(16.0, hardGame.getEnemySpawnCycle());
         assertEquals(1.2, hardGame.getEnemyHpScale());
-        assertEquals(1.1, hardGame.getEnemySpeedScale());
+        assertEquals(1.05, hardGame.getEnemySpeedScale());
         assertEquals(250, hardGame.getBossThreshold());
     }
 
@@ -72,10 +73,10 @@ class GameTemplateModeTest {
         assertEquals(1.10, normalGame.getEnemySpeedScale(), 1e-9);
 
         assertEquals(15.0, hardGame.getEnemySpawnCycle());
-        assertEquals(17.0, hardGame.getEnemyShootCycle());
-        assertEquals(19.0, hardGame.getHeroShootCycle());
-        assertEquals(1.35, hardGame.getEnemyHpScale(), 1e-9);
-        assertEquals(1.20, hardGame.getEnemySpeedScale(), 1e-9);
+        assertEquals(18.0, hardGame.getEnemyShootCycle());
+        assertEquals(15.0, hardGame.getHeroShootCycle());
+        assertEquals(1.30, hardGame.getEnemyHpScale(), 1e-9);
+        assertEquals(1.10, hardGame.getEnemySpeedScale(), 1e-9);
     }
 
     @Test
@@ -118,6 +119,27 @@ class GameTemplateModeTest {
 
         assertEquals(scoreBefore + 30, game.getScore());
         assertTrue(game.getItems().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Hard mode keeps mob enemy one-shot")
+    void shouldKeepMobEnemyOneShotInHardMode() {
+        HardGame hardGame = new HardGame();
+        hardGame.debugSetScore(10_000);
+        HeroAircraft heroAircraft = HeroAircraft.getInstance();
+        heroAircraft.prepareForNewGame();
+        heroAircraft.setLocation(256, 1500);
+
+        runFrames(hardGame, 32);
+
+        boolean foundMobEnemy = false;
+        for (AbstractAircraft enemyAircraft : hardGame.getEnemyAircrafts()) {
+            if (enemyAircraft instanceof MobEnemy) {
+                foundMobEnemy = true;
+                assertEquals(30, enemyAircraft.getHp());
+            }
+        }
+        assertTrue(foundMobEnemy);
     }
 
     private void runFrames(Game game, int frameCount) {

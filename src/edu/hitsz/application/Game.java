@@ -374,11 +374,17 @@ public abstract class Game extends JPanel {
     }
 
     private void configureEnemyOnSpawn(AbstractAircraft enemyAircraft) {
-        enemyAircraft.resetHp(scaleHp(enemyAircraft.getMaxHp()));
+        enemyAircraft.resetHp(scaleHp(enemyAircraft, enemyAircraft.getMaxHp()));
         enemyAircraft.scaleSpeed(enemySpeedScale);
     }
 
-    private int scaleHp(int baseHp) {
+    /**
+     * 普通敌机始终保持一发击毁，避免难度提升直接损害基础爽感。
+     */
+    private int scaleHp(AbstractAircraft enemyAircraft, int baseHp) {
+        if (enemyAircraft instanceof MobEnemy) {
+            return baseHp;
+        }
         return Math.max(1, (int) Math.round(baseHp * enemyHpScale));
     }
 
@@ -463,6 +469,14 @@ public abstract class Game extends JPanel {
 
     protected final void printDifficultyUpgrade(String message) {
         System.out.println("[" + difficulty.name() + "] " + message);
+    }
+
+    protected final String describePercentIncrease(double currentScale) {
+        int percent = (int) Math.round((currentScale - 1.0) * 100);
+        if (percent <= 0) {
+            return "保持当前倍率";
+        }
+        return "提升 " + percent + "%";
     }
 
     protected final void setEnemySpawnCycle(double enemySpawnCycle) {

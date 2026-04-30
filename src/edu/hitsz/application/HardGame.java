@@ -21,11 +21,11 @@ public class HardGame extends Game {
         eliteWeight = 0.25;
         elitePlusWeight = 0.25;
         aceWeight = 0.20;
-        setHeroShootCycle(18);
-        setEnemyShootCycle(18);
+        setHeroShootCycle(14);
+        setEnemyShootCycle(19);
         setEnemySpawnCycle(16);
         enemyHpScale = 1.20;
-        enemySpeedScale = 1.10;
+        enemySpeedScale = 1.05;
         bossEnabled = true;
         bossThreshold = 250;
     }
@@ -37,17 +37,22 @@ public class HardGame extends Game {
         }
         setEnemySpawnCycle(Math.max(8, getEnemySpawnCycle() - 1));
         setEnemyShootCycle(Math.max(10, getEnemyShootCycle() - 1));
-        setHeroShootCycle(Math.min(24, getHeroShootCycle() + 1));
-        enemyHpScale += 0.15;
-        enemySpeedScale += 0.10;
-        printDifficultyUpgrade(String.format(
-                "difficulty up: enemySpawnCycle=%.0f enemyShootCycle=%.0f heroShootCycle=%.0f enemyHpScale=%.2f enemySpeedScale=%.2f",
-                getEnemySpawnCycle(),
-                getEnemyShootCycle(),
-                getHeroShootCycle(),
-                enemyHpScale,
-                enemySpeedScale
-        ));
+        setHeroShootCycle(Math.min(22, getHeroShootCycle() + 1));
+        enemyHpScale += 0.10;
+        enemySpeedScale += 0.05;
+        printDifficultyUpgrade(
+                "战场压力升级：敌机刷新更频繁，生成周期缩短到 "
+                        + (int) getEnemySpawnCycle()
+                        + " 帧；敌机射击间隔缩短到 "
+                        + (int) getEnemyShootCycle()
+                        + " 帧。为保留前期手感，普通敌机仍保持一发击毁；精英及以上敌机生命值"
+                        + describePercentIncrease(enemyHpScale)
+                        + "，飞行速度"
+                        + describePercentIncrease(enemySpeedScale)
+                        + "；英雄机射击周期调整为 "
+                        + (int) getHeroShootCycle()
+                        + " 帧。"
+        );
     }
 
     @Override

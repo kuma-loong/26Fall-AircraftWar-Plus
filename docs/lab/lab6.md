@@ -25,10 +25,11 @@
 - 难度参数与递进：
   - `Easy`：`enemyMax=4`，权重 `0.65/0.25/0.10/0.00`，`heroShoot=12`，`enemyShoot=24`，`spawn=24`，`hpScale=0.90`，`speedScale=0.90`，无 Boss。
   - `Normal`：`enemyMax=5`，权重 `0.45/0.25/0.20/0.10`，`heroShoot=15`，`enemyShoot=20`，`spawn=20`，`hpScale=1.00`，`speedScale=1.00`，`bossThreshold=300`，Boss 血量固定。
-  - `Hard`：`enemyMax=6`，权重 `0.30/0.25/0.25/0.20`，`heroShoot=18`，`enemyShoot=18`，`spawn=16`，`hpScale=1.20`，`speedScale=1.10`，`bossThreshold=250`，Boss 每次 +50*(n-1)。
+  - `Hard`：`enemyMax=6`，权重 `0.30/0.25/0.25/0.20`，`heroShoot=14`，`enemyShoot=19`，`spawn=16`，`hpScale=1.20`，`speedScale=1.05`，`bossThreshold=250`，Boss 每次 +50*(n-1)。
   - `Normal` 每 300 帧递进：`spawn-1(min 12)`、`hpScale+0.10`、`speedScale+0.10`。
-  - `Hard` 每 250 帧递进：`spawn-1(min 8)`、`enemyShoot-1(min 10)`、`heroShoot+1(max 24)`、`hpScale+0.15`、`speedScale+0.10`。
-  - 两种递进均输出控制台日志。
+  - `Hard` 每 250 帧递进：`spawn-1(min 8)`、`enemyShoot-1(min 10)`、`heroShoot+1(max 22)`、`hpScale+0.10`、`speedScale+0.05`。
+  - 困难模式中普通敌机保持基础生命值，继续维持一发击毁；强化主要集中在精英及以上敌机与整体战场节奏。
+  - 两种递进均输出描述性控制台日志。
 
 ### 3. 测试与验证
 - 保留并通过原有 13 个测试。
