@@ -110,8 +110,8 @@ public class ImageManager {
         GameDifficulty safeDifficulty = difficulty == null ? GameDifficulty.NORMAL : difficulty;
         String backgroundFileName = switch (safeDifficulty) {
             case EASY -> "bg2.jpg";
-            case NORMAL -> "bg.jpg";
-            case HARD -> "bg3.jpg";
+            case NORMAL -> "bg4.jpg";
+            case HARD -> "bg5.jpg";
         };
         try {
             BACKGROUND_IMAGE = loadImage(backgroundFileName);
