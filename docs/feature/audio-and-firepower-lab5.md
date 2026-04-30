@@ -21,7 +21,7 @@
 ## 3. 火力道具限时恢复
 - `FireItem` 激活后切换为散射策略。
 - `SuperFireItem` 激活后切换为环射策略。
-- 使用 `Runnable + Thread.sleep()` 开启限时恢复线程，默认持续 `10000ms`。
+- 使用 `Runnable + Thread.sleep()` 开启限时恢复线程，散射默认持续 `5000ms`，环射默认持续 `3000ms`。
 - `HeroAircraft` 使用版本号校验，仅允许最后一次火力效果在线程结束后恢复默认直射。
 
 ## 4. 兼容性与边界

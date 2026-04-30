@@ -41,17 +41,7 @@ public class HardGame extends Game {
         enemyHpScale += 0.10;
         enemySpeedScale += 0.05;
         printDifficultyUpgrade(
-                "战场压力升级：敌机刷新更频繁，生成周期缩短到 "
-                        + (int) getEnemySpawnCycle()
-                        + " 帧；敌机射击间隔缩短到 "
-                        + (int) getEnemyShootCycle()
-                        + " 帧。为保留前期手感，普通敌机仍保持一发击毁；精英及以上敌机生命值"
-                        + describePercentIncrease(enemyHpScale)
-                        + "，飞行速度"
-                        + describePercentIncrease(enemySpeedScale)
-                        + "；英雄机射击周期调整为 "
-                        + (int) getHeroShootCycle()
-                        + " 帧。"
+                "敌机增多，速度加快，射击更密集。"
         );
     }
 

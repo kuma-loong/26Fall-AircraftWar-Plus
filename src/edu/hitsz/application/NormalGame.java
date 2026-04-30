@@ -39,13 +39,7 @@ public class NormalGame extends Game {
         enemyHpScale += 0.10;
         enemySpeedScale += 0.10;
         printDifficultyUpgrade(
-                "敌机刷新更频繁，生成周期缩短到 "
-                        + (int) getEnemySpawnCycle()
-                        + " 帧；精英及以上敌机生命值"
-                        + describePercentIncrease(enemyHpScale)
-                        + "，飞行速度"
-                        + describePercentIncrease(enemySpeedScale)
-                        + "。"
+                "敌机增多，速度加快。"
         );
     }
 }

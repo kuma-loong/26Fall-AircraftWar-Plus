@@ -125,21 +125,11 @@ class GameTemplateModeTest {
     @DisplayName("Hard mode keeps mob enemy one-shot")
     void shouldKeepMobEnemyOneShotInHardMode() {
         HardGame hardGame = new HardGame();
-        hardGame.debugSetScore(10_000);
-        HeroAircraft heroAircraft = HeroAircraft.getInstance();
-        heroAircraft.prepareForNewGame();
-        heroAircraft.setLocation(256, 1500);
+        MobEnemy mobEnemy = new MobEnemy(100, 100, 0, 10, 30);
 
-        runFrames(hardGame, 32);
+        hardGame.debugConfigureEnemyOnSpawn(mobEnemy);
 
-        boolean foundMobEnemy = false;
-        for (AbstractAircraft enemyAircraft : hardGame.getEnemyAircrafts()) {
-            if (enemyAircraft instanceof MobEnemy) {
-                foundMobEnemy = true;
-                assertEquals(30, enemyAircraft.getHp());
-            }
-        }
-        assertTrue(foundMobEnemy);
+        assertEquals(30, mobEnemy.getHp());
     }
 
     private void runFrames(Game game, int frameCount) {

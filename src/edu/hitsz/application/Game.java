@@ -611,4 +611,8 @@ public abstract class Game extends JPanel {
     void debugActivateItem(AbstractItem item) {
         activateItem(item);
     }
+
+    void debugConfigureEnemyOnSpawn(AbstractAircraft enemyAircraft) {
+        configureEnemyOnSpawn(enemyAircraft);
+    }
 }
