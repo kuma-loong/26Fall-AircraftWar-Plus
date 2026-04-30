@@ -42,32 +42,3 @@ note bottom of AbstractItem
 Subject / ConcreteSubject
 end note
 @enduml
-
-@startuml
-title Lab6 Template Method Pattern
-
-abstract class Game {
-  +start()
-  +action()
-  #initializeDifficulty()
-  #progressDifficulty()
-  #getBossHpBonusPerSpawn(spawnIndex: int)
-}
-
-class EasyGame
-class NormalGame
-class HardGame
-class GameMainFrame {
-  -createGame(difficulty: GameDifficulty)
-}
-
-Game <|-- EasyGame
-Game <|-- NormalGame
-Game <|-- HardGame
-GameMainFrame --> Game
-
-note bottom of Game
-<<Template Method Pattern>>
-action() defines frame skeleton
-end note
-@enduml

@@ -1,0 +1,105 @@
+@startuml
+title Lab6 Template Method Pattern
+
+abstract class Game {
+  -timer: Timer
+  -heroAircraft: HeroAircraft
+  -enemyAircrafts: List<AbstractAircraft>
+  -heroBullets: List<BaseBullet>
+  -enemyBullets: List<BaseBullet>
+  -items: List<AbstractItem>
+  #enemyMaxNumber: int
+  #heroShootCycle: double
+  #enemyShootCycle: double
+  #enemySpawnCycle: double
+  #enemyHpScale: double
+  #enemySpeedScale: double
+  #bossEnabled: boolean
+  #bossThreshold: int
+  +start(): void
+  +action(): void
+  #initializeDifficulty(): void
+  #progressDifficulty(): void
+  #getBossHpBonusPerSpawn(spawnIndex: int): int
+  #finalizeDifficultyInitialization(): void
+  -spawnEnemyAction(): void
+  -shootAction(): void
+  -bulletsMoveAction(): void
+  -aircraftsMoveAction(): void
+  -itemsMoveAction(): void
+  -crashCheckAction(): void
+  -postProcessAction(): void
+  -progressDifficultyAction(): void
+  -checkResultAction(): void
+}
+
+class EasyGame {
+  +EasyGame()
+  #initializeDifficulty(): void
+  #progressDifficulty(): void
+}
+
+class NormalGame {
+  -UPGRADE_INTERVAL: int
+  +NormalGame()
+  #initializeDifficulty(): void
+  #progressDifficulty(): void
+}
+
+class HardGame {
+  -UPGRADE_INTERVAL: int
+  +HardGame()
+  #initializeDifficulty(): void
+  #progressDifficulty(): void
+  #getBossHpBonusPerSpawn(spawnIndex: int): int
+}
+
+class GameMainFrame {
+  -createGame(difficulty: GameDifficulty)
+  +startGame(difficulty: GameDifficulty): void
+}
+
+Game <|-- EasyGame
+Game <|-- NormalGame
+Game <|-- HardGame
+GameMainFrame --> Game : creates / starts
+
+note right of Game
+<<Template Method Pattern>>
+template method:
+action()
+
+frame skeleton:
+1. spawnEnemyAction()
+2. shootAction()
+3. move actions
+4. crashCheckAction()
+5. postProcessAction()
+6. progressDifficultyAction()
+7. repaint()
+8. checkResultAction()
+end note
+
+note bottom of EasyGame
+fixed easy parameters
+no boss
+no progression
+end note
+
+note bottom of NormalGame
+fixed normal parameters
+boss enabled
+progression every 300 frames
+end note
+
+note bottom of HardGame
+fixed hard parameters
+boss hp increases by spawn count
+progression every 250 frames
+end note
+
+note bottom of GameMainFrame
+selects concrete subclass by
+GameDifficulty
+end note
+@enduml

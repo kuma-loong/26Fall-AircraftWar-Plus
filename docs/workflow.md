@@ -337,7 +337,8 @@
 5. 测试、UML 与文档
 - 新增 `GameTemplateModeTest`。
 - 新增 `ItemObserverEffectTest`。
-- 新增 `uml/Lab6ObserverTemplate.puml`。
+- 新增 `uml/Lab6ObserverPattern.puml`。
+- 新增 `uml/Lab6TemplateMethod.puml`。
 - 更新 `docs/lab/lab6.md`、新增 `docs/feature/observer-template-lab6.md`、同步 `docs/note.md`。
 
 ### 执行验证
