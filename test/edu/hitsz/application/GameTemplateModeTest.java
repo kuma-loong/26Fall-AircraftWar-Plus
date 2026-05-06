@@ -42,7 +42,7 @@ class GameTemplateModeTest {
         HardGame hardGame = new HardGame();
 
         assertEquals(5, normalGame.getEnemyMaxNumber());
-        assertEquals(15.0, normalGame.getHeroShootCycle());
+        assertEquals(12.0, normalGame.getHeroShootCycle());
         assertEquals(20.0, normalGame.getEnemyShootCycle());
         assertEquals(20.0, normalGame.getEnemySpawnCycle());
         assertEquals(1.0, normalGame.getEnemyHpScale());
@@ -50,7 +50,7 @@ class GameTemplateModeTest {
         assertEquals(300, normalGame.getBossThreshold());
 
         assertEquals(6, hardGame.getEnemyMaxNumber());
-        assertEquals(14.0, hardGame.getHeroShootCycle());
+        assertEquals(11.0, hardGame.getHeroShootCycle());
         assertEquals(19.0, hardGame.getEnemyShootCycle());
         assertEquals(16.0, hardGame.getEnemySpawnCycle());
         assertEquals(1.2, hardGame.getEnemyHpScale());
@@ -72,13 +72,13 @@ class GameTemplateModeTest {
 
         assertEquals(19.0, normalGame.getEnemySpawnCycle());
         assertEquals(20.0, normalGame.getEnemyShootCycle());
-        assertEquals(15.0, normalGame.getHeroShootCycle());
+        assertEquals(12.0, normalGame.getHeroShootCycle());
         assertEquals(1.10, normalGame.getEnemyHpScale(), 1e-9);
         assertEquals(1.10, normalGame.getEnemySpeedScale(), 1e-9);
 
         assertEquals(15.0, hardGame.getEnemySpawnCycle());
         assertEquals(18.0, hardGame.getEnemyShootCycle());
-        assertEquals(15.0, hardGame.getHeroShootCycle());
+        assertEquals(12.0, hardGame.getHeroShootCycle());
         assertEquals(1.30, hardGame.getEnemyHpScale(), 1e-9);
         assertEquals(1.10, hardGame.getEnemySpeedScale(), 1e-9);
     }
@@ -137,33 +137,41 @@ class GameTemplateModeTest {
     }
 
     @Test
-    @DisplayName("Combo grants bonus score on fifth kill")
-    void shouldApplyComboBonusScore() {
-        NormalGame game = new NormalGame();
-        HeroAircraft heroAircraft = HeroAircraft.getInstance();
-        heroAircraft.prepareForNewGame();
-
-        for (int i = 0; i < 5; i++) {
-            game.getEnemyAircrafts().add(new MobEnemy(100 + i * 20, 120, 0, 10, 30));
-        }
-
-        game.debugActivateItem(new BombItem(100, 100, 0, 0));
-
-        assertEquals(52, game.getScore());
+    @DisplayName("Combo works in all difficulty modes")
+    void shouldEnableComboInAllModes() {
+        verifyComboEnabled(new EasyGame());
+        verifyComboEnabled(new NormalGame());
+        verifyComboEnabled(new HardGame());
     }
 
     @Test
-    @DisplayName("Combo resets after hero is hit")
-    void shouldResetComboAfterHeroTakesDamage() {
+    @DisplayName("Combo grants bonus score after consecutive hero hits")
+    void shouldApplyComboBonusScoreAfterHeroHits() {
+        NormalGame game = new NormalGame();
+        for (int i = 0; i < 4; i++) {
+            game.debugRegisterHeroBulletHit();
+            game.action();
+        }
+        int scoreBefore = game.getScore();
+        game.debugRegisterHeroBulletHit();
+        game.debugRegisterEnemyDestroyed(10);
+
+        assertEquals(scoreBefore + 12, game.getScore());
+    }
+
+    @Test
+    @DisplayName("Enemy bullet hit does not reset combo")
+    void shouldKeepComboAfterEnemyBulletHit() {
         NormalGame game = new NormalGame();
         HeroAircraft heroAircraft = HeroAircraft.getInstance();
         heroAircraft.prepareForNewGame();
+        heroAircraft.resetHp(100);
 
         for (int i = 0; i < 4; i++) {
-            game.getEnemyAircrafts().add(new MobEnemy(100 + i * 20, 120, 0, 10, 30));
+            game.debugRegisterHeroBulletHit();
+            game.action();
         }
-        game.debugActivateItem(new BombItem(100, 100, 0, 0));
-        assertEquals(40, game.getScore());
+        assertEquals(4, game.getComboCount());
 
         game.getEnemyBullets().add(new EnemyBullet(
                 heroAircraft.getLocationX(),
@@ -173,11 +181,39 @@ class GameTemplateModeTest {
                 1
         ));
         game.action();
+        assertEquals(4, game.getComboCount());
 
-        game.getEnemyAircrafts().add(new MobEnemy(220, 120, 0, 10, 30));
-        game.debugActivateItem(new BombItem(100, 100, 0, 0));
+        game.debugRegisterHeroBulletHit();
+        int scoreBefore = game.getScore();
+        game.debugRegisterEnemyDestroyed(10);
 
-        assertEquals(50, game.getScore());
+        assertEquals(5, game.getComboCount());
+        assertEquals(scoreBefore + 12, game.getScore());
+    }
+
+    @Test
+    @DisplayName("Combo heals hero on every tenth hit")
+    void shouldHealHeroOnTenthComboHit() {
+        NormalGame game = new NormalGame();
+        HeroAircraft heroAircraft = HeroAircraft.getInstance();
+        heroAircraft.prepareForNewGame();
+        heroAircraft.resetHp(100);
+        heroAircraft.decreaseHp(30);
+
+        for (int i = 0; i < 10; i++) {
+            game.debugRegisterHeroBulletHit();
+            game.action();
+        }
+
+        assertEquals(10, game.getComboCount());
+        assertEquals(80, heroAircraft.getHp());
+    }
+
+    private void verifyComboEnabled(Game game) {
+        game.debugRegisterHeroBulletHit();
+        game.action();
+        game.debugRegisterHeroBulletHit();
+        assertEquals(2, game.getComboCount());
     }
 
     private void runFrames(Game game, int frameCount) {

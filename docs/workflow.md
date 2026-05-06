@@ -559,3 +559,68 @@
 - 源码编译：
   - `javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`
 - 结果：编译通过。
+
+## 2026-05-06 连击系统重构
+
+### 需求来源
+- 用户要求：重构连击系统，使其由英雄机子弹命中驱动，被敌方子弹命中不再清零，并在三档难度中统一生效，同时补充更明显的屏幕提示。
+
+### 本次修改
+1. 连击判定重构
+- `Game` 中的连击累加由“击毁敌机”改为“英雄机子弹命中敌机”。
+- 连击持续窗口由 `75` 帧调整为 `45` 帧，更适合命中型节奏。
+- 敌方子弹命中英雄机时不再清空连击；英雄机与敌机直接相撞时仍立即清空。
+
+2. 奖励与提示重构
+- 保留原有奖励：连击倍率加分、每 `10` 连击回复 `10` 点生命值。
+- 敌机被击毁时，按当前连击倍率结算额外得分。
+- 新增屏幕上方居中的高亮提示：
+  - 持续显示 `HIT COMBO xN`
+  - 触发奖励时显示 `HP +10` 或分数倍率奖励提示
+
+3. 测试补齐
+- 更新 `GameTemplateModeTest`，覆盖：
+  - 三档难度下连击均可生效
+  - 连续命中后的加分倍率
+  - 敌方子弹命中后连击不清零
+  - 第 `10` 次连击触发回血
+
+### 执行验证
+- 源码编译：
+  - `javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`
+- 测试编译：
+  - `find test -name "*.java" -print0 | xargs -0 javac -sourcepath test -encoding UTF-8 -cp lib/junit-platform-console-standalone-1.12.2.jar:/tmp/aircraftwar-build -d /tmp/aircraftwar-test`
+- JUnit：
+  - `java -Djava.awt.headless=true -jar lib/junit-platform-console-standalone-1.12.2.jar execute --class-path /tmp/aircraftwar-test:/tmp/aircraftwar-build --select-class edu.hitsz.application.GameTemplateModeTest`
+  - `java -jar lib/junit-platform-console-standalone-1.12.2.jar execute --class-path /tmp/aircraftwar-test:/tmp/aircraftwar-build --select-class edu.hitsz.application.ImageManagerTest`
+- 结果：
+  - `GameTemplateModeTest`：`10/10` 通过；
+  - `ImageManagerTest`：`1/1` 通过；
+  - 在当前无音频设备测试环境下，音频线程会输出 `SourceDataLine` 不可用异常，但未影响本次断言结果。
+
+## 2026-05-06 连击系统收尾清理
+
+### 需求来源
+- 用户要求：在功能完成后尽量删去连击功能中不必要的代码，保持项目干净。
+
+### 本次修改
+1. 状态收口
+- 删除连击提示中冗余的 `comboOverlayExpireFrame` 状态。
+- 奖励提示位置改为直接依据当前连击是否仍在显示计算，减少重复维护。
+
+2. 测试接口收窄
+- 将 `Game` 中仅供测试使用的连击/调试入口从 `public` 收窄为包级可见，避免污染正式对外 API。
+
+3. 细节规范
+- 连击倍率格式化改为 `Locale.ROOT`，避免运行环境区域设置影响提示文本格式。
+
+### 执行验证
+- 源码编译：
+  - `javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`
+- 测试编译：
+  - `find test -name "*.java" -print0 | xargs -0 javac -sourcepath test -encoding UTF-8 -cp lib/junit-platform-console-standalone-1.12.2.jar:/tmp/aircraftwar-build -d /tmp/aircraftwar-test`
+- JUnit：
+  - `java -Djava.awt.headless=true -jar lib/junit-platform-console-standalone-1.12.2.jar execute --class-path /tmp/aircraftwar-test:/tmp/aircraftwar-build --select-class edu.hitsz.application.GameTemplateModeTest`
+- 结果：
+  - `GameTemplateModeTest`：`10/10` 通过；
+  - 测试环境无音频设备，音频线程仍会输出 `SourceDataLine` 不可用异常，但未影响断言结果。

@@ -30,9 +30,11 @@ import javax.swing.Timer;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 /**
@@ -56,9 +58,11 @@ public abstract class Game extends JPanel {
     private static final int ELITE_PLUS_SCORE = 30;
     private static final int ACE_SCORE = 50;
     private static final int BOSS_SCORE = 100;
-    private static final int COMBO_EXPIRE_FRAMES = 75;
+    private static final int COMBO_HIT_EXPIRE_FRAMES = 45;
     private static final int COMBO_HEAL_STEP = 10;
     private static final int COMBO_HEAL_AMOUNT = 10;
+    private static final int COMBO_OVERLAY_EXPIRE_FRAMES = 30;
+    private static final int COMBO_REWARD_EXPIRE_FRAMES = 45;
     private int backGroundTop = 0;
     private final Timer timer;
     private final HeroAircraft heroAircraft;
@@ -82,11 +86,13 @@ public abstract class Game extends JPanel {
     private int score = 0;
     private int comboCount = 0;
     private int comboExpireFrame = -1;
+    private int comboRewardExpireFrame = -1;
     private int bossSpawnCount = 0;
     private boolean gameOverFlag = false;
     private boolean gameOverHandled = false;
     private boolean bossActive = false;
     private int nextBossTriggerScore = Integer.MAX_VALUE;
+    private String comboRewardText = "";
 
     protected int enemyMaxNumber = 5;
     protected double heroShootCycle = 15;
@@ -246,7 +252,6 @@ public abstract class Game extends JPanel {
             if (heroAircraft.crash(enemyBullet)) {
                 heroAircraft.decreaseHp(enemyBullet.getPower());
                 enemyBullet.vanish();
-                resetCombo();
             }
         }
 
@@ -259,6 +264,7 @@ public abstract class Game extends JPanel {
                     continue;
                 }
                 if (enemyAircraft.crash(bullet)) {
+                    registerHeroBulletHit();
                     enemyAircraft.decreaseHp(bullet.getPower());
                     bullet.vanish();
                     AudioManager.playBulletHit();
@@ -465,19 +471,25 @@ public abstract class Game extends JPanel {
     }
 
     private void registerEnemyDestroyed(int baseScore) {
-        advanceCombo();
-        score += applyComboMultiplier(baseScore);
+        int finalScore = applyComboMultiplier(baseScore);
+        score += finalScore;
+        showScoreReward(baseScore, finalScore);
     }
 
-    private void advanceCombo() {
+    /**
+     * 连击判定以英雄机子弹命中敌机为准。
+     * 命中后刷新连击持续时间，并在达到阶段时发放回血奖励。
+     */
+    private void registerHeroBulletHit() {
         if (comboCount > 0 && frameCount <= comboExpireFrame) {
             comboCount++;
         } else {
             comboCount = 1;
         }
-        comboExpireFrame = frameCount + COMBO_EXPIRE_FRAMES;
+        comboExpireFrame = frameCount + COMBO_HIT_EXPIRE_FRAMES;
         if (comboCount % COMBO_HEAL_STEP == 0) {
             heroAircraft.increaseHp(COMBO_HEAL_AMOUNT);
+            showComboReward("HP +" + COMBO_HEAL_AMOUNT);
         }
     }
 
@@ -507,6 +519,25 @@ public abstract class Game extends JPanel {
     private void resetCombo() {
         comboCount = 0;
         comboExpireFrame = -1;
+    }
+
+    private void showScoreReward(int baseScore, int finalScore) {
+        if (finalScore <= baseScore) {
+            return;
+        }
+        showComboReward("SCORE +" + (finalScore - baseScore) + "  x" + formatMultiplier(getComboMultiplier()));
+    }
+
+    private void showComboReward(String rewardText) {
+        if (rewardText == null || rewardText.isEmpty()) {
+            return;
+        }
+        comboRewardText = rewardText;
+        comboRewardExpireFrame = frameCount + COMBO_REWARD_EXPIRE_FRAMES;
+    }
+
+    private String formatMultiplier(double multiplier) {
+        return String.format(Locale.ROOT, "%.1f", multiplier);
     }
 
     private boolean hasCloseDropX(int[] dropXs, int size, int candidateX) {
@@ -576,6 +607,7 @@ public abstract class Game extends JPanel {
         g.drawImage(ImageManager.HERO_IMAGE, heroAircraft.getLocationX() - ImageManager.HERO_IMAGE.getWidth() / 2,
                 heroAircraft.getLocationY() - ImageManager.HERO_IMAGE.getHeight() / 2, null);
         paintScoreAndLife(g);
+        paintComboOverlay(g);
     }
 
     private void paintImageWithPositionRevised(Graphics g, List<? extends AbstractFlyingObject> objects) {
@@ -599,6 +631,22 @@ public abstract class Game extends JPanel {
             y += 20;
             g.drawString("COMBO: x" + comboCount, x, y);
         }
+    }
+
+    private void paintComboOverlay(Graphics g) {
+        if (!(g instanceof Graphics2D graphics2D)) {
+            return;
+        }
+        if (!comboRewardText.isEmpty() && frameCount <= comboRewardExpireFrame) {
+            graphics2D.setColor(new Color(255, 140, 0));
+            graphics2D.setFont(new Font("SansSerif", Font.BOLD, 20));
+            int y = 25;
+            int textWidth = graphics2D.getFontMetrics().stringWidth(comboRewardText);
+            int x = Math.max(20, GameViewport.getWidth() - textWidth - 12);
+            graphics2D.drawString(comboRewardText, x, y);
+            return;
+        }
+        comboRewardText = "";
     }
 
     public final GameDifficulty getDifficulty() {
@@ -645,6 +693,10 @@ public abstract class Game extends JPanel {
         return bossSpawnCount;
     }
 
+    final int getComboCount() {
+        return comboCount;
+    }
+
     public final List<AbstractAircraft> getEnemyAircrafts() {
         return enemyAircrafts;
     }
@@ -657,25 +709,33 @@ public abstract class Game extends JPanel {
         return items;
     }
 
-    public final void debugSetScore(int score) {
+    final void debugSetScore(int score) {
         this.score = Math.max(0, score);
     }
 
-    public final void debugForceSpawnBoss() {
+    final void debugForceSpawnBoss() {
         if (bossEnabled && !bossActive) {
             spawnBossAction();
         }
     }
 
-    public final void debugPostProcess() {
+    final void debugPostProcess() {
         postProcessAction();
     }
 
-    public final void debugActivateItem(AbstractItem item) {
+    final void debugActivateItem(AbstractItem item) {
         activateItem(item);
     }
 
-    public final void debugConfigureEnemyOnSpawn(AbstractAircraft enemyAircraft) {
+    final void debugConfigureEnemyOnSpawn(AbstractAircraft enemyAircraft) {
         configureEnemyOnSpawn(enemyAircraft);
+    }
+
+    final void debugRegisterHeroBulletHit() {
+        registerHeroBulletHit();
+    }
+
+    final void debugRegisterEnemyDestroyed(int baseScore) {
+        registerEnemyDestroyed(baseScore);
     }
 }
