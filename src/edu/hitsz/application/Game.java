@@ -86,13 +86,15 @@ public abstract class Game extends JPanel {
     private int score = 0;
     private int comboCount = 0;
     private int comboExpireFrame = -1;
-    private int comboRewardExpireFrame = -1;
+    private int comboScoreRewardExpireFrame = -1;
+    private int comboHpRewardExpireFrame = -1;
     private int bossSpawnCount = 0;
     private boolean gameOverFlag = false;
     private boolean gameOverHandled = false;
     private boolean bossActive = false;
     private int nextBossTriggerScore = Integer.MAX_VALUE;
-    private String comboRewardText = "";
+    private String comboScoreRewardText = "";
+    private String comboHpRewardText = "";
 
     protected int enemyMaxNumber = 5;
     protected double heroShootCycle = 15;
@@ -489,7 +491,7 @@ public abstract class Game extends JPanel {
         comboExpireFrame = frameCount + COMBO_HIT_EXPIRE_FRAMES;
         if (comboCount % COMBO_HEAL_STEP == 0) {
             heroAircraft.increaseHp(COMBO_HEAL_AMOUNT);
-            showComboReward("HP +" + COMBO_HEAL_AMOUNT);
+            showHpReward("HP +" + COMBO_HEAL_AMOUNT);
         }
     }
 
@@ -525,15 +527,16 @@ public abstract class Game extends JPanel {
         if (finalScore <= baseScore) {
             return;
         }
-        showComboReward("SCORE +" + (finalScore - baseScore) + "  x" + formatMultiplier(getComboMultiplier()));
+        comboScoreRewardText = "SCORE +" + (finalScore - baseScore) + "  x" + formatMultiplier(getComboMultiplier());
+        comboScoreRewardExpireFrame = frameCount + COMBO_REWARD_EXPIRE_FRAMES;
     }
 
-    private void showComboReward(String rewardText) {
+    private void showHpReward(String rewardText) {
         if (rewardText == null || rewardText.isEmpty()) {
             return;
         }
-        comboRewardText = rewardText;
-        comboRewardExpireFrame = frameCount + COMBO_REWARD_EXPIRE_FRAMES;
+        comboHpRewardText = rewardText;
+        comboHpRewardExpireFrame = frameCount + COMBO_REWARD_EXPIRE_FRAMES;
     }
 
     private String formatMultiplier(double multiplier) {
@@ -637,16 +640,26 @@ public abstract class Game extends JPanel {
         if (!(g instanceof Graphics2D graphics2D)) {
             return;
         }
-        if (!comboRewardText.isEmpty() && frameCount <= comboRewardExpireFrame) {
-            graphics2D.setColor(new Color(255, 140, 0));
-            graphics2D.setFont(new Font("SansSerif", Font.BOLD, 20));
-            int y = 25;
-            int textWidth = graphics2D.getFontMetrics().stringWidth(comboRewardText);
-            int x = Math.max(20, GameViewport.getWidth() - textWidth - 12);
-            graphics2D.drawString(comboRewardText, x, y);
-            return;
+        graphics2D.setFont(new Font("SansSerif", Font.BOLD, 20));
+
+        if (!comboScoreRewardText.isEmpty() && frameCount <= comboScoreRewardExpireFrame) {
+            drawRightAlignedHudText(graphics2D, comboScoreRewardText, 25, new Color(255, 140, 0));
+        } else {
+            comboScoreRewardText = "";
         }
-        comboRewardText = "";
+
+        if (!comboHpRewardText.isEmpty() && frameCount <= comboHpRewardExpireFrame) {
+            drawRightAlignedHudText(graphics2D, comboHpRewardText, 47, new Color(255, 99, 71));
+        } else {
+            comboHpRewardText = "";
+        }
+    }
+
+    private void drawRightAlignedHudText(Graphics2D graphics2D, String text, int baselineY, Color color) {
+        graphics2D.setColor(color);
+        int textWidth = graphics2D.getFontMetrics().stringWidth(text);
+        int x = Math.max(20, GameViewport.getWidth() - textWidth - 12);
+        graphics2D.drawString(text, x, baselineY);
     }
 
     public final GameDifficulty getDifficulty() {
