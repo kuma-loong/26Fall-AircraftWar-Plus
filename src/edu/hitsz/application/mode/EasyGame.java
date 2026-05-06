@@ -26,7 +26,7 @@ public class EasyGame extends Game {
         eliteWeight = 0.25;
         elitePlusWeight = 0.10;
         aceWeight = 0.00;
-        setHeroShootCycle(12);
+        setHeroShootCycle(10);
         setEnemyShootCycle(24);
         setEnemySpawnCycle(24);
         enemyHpScale = 0.90;

@@ -27,7 +27,7 @@ public class HardGame extends Game {
         eliteWeight = 0.25;
         elitePlusWeight = 0.25;
         aceWeight = 0.20;
-        setHeroShootCycle(14);
+        setHeroShootCycle(11);
         setEnemyShootCycle(19);
         setEnemySpawnCycle(16);
         enemyHpScale = 1.20;
@@ -43,7 +43,7 @@ public class HardGame extends Game {
         }
         setEnemySpawnCycle(Math.max(8, getEnemySpawnCycle() - 1));
         setEnemyShootCycle(Math.max(10, getEnemyShootCycle() - 1));
-        setHeroShootCycle(Math.min(22, getHeroShootCycle() + 1));
+        setHeroShootCycle(Math.min(18, getHeroShootCycle() + 1));
         enemyHpScale += 0.10;
         enemySpeedScale += 0.05;
         printDifficultyUpgrade(

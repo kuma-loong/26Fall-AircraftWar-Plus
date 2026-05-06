@@ -27,7 +27,7 @@ public class NormalGame extends Game {
         eliteWeight = 0.25;
         elitePlusWeight = 0.20;
         aceWeight = 0.10;
-        setHeroShootCycle(15);
+        setHeroShootCycle(12);
         setEnemyShootCycle(20);
         setEnemySpawnCycle(20);
         enemyHpScale = 1.00;
