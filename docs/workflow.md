@@ -539,3 +539,23 @@
 - JUnit：
   - `java -jar lib/junit-platform-console-standalone-1.12.2.jar execute --class-path /tmp/aircraftwar-test:/tmp/aircraftwar-build --scan-class-path`
 - 结果：`27/27` 测试通过。
+
+## 2026-05-06 英雄机全局射速提升
+
+### 需求来源
+- 用户要求：提高游戏整体的英雄机射速，缩短子弹发射间隔，同时保持现有射击逻辑与难度结构不变。
+
+### 本次修改
+1. 三档难度统一提速
+- `EasyGame`：英雄机射击周期由 `12` 调整为 `10`。
+- `NormalGame`：英雄机射击周期由 `15` 调整为 `12`。
+- `HardGame`：英雄机射击周期由 `14` 调整为 `11`。
+
+2. 困难模式后期节奏修正
+- 保留困难模式递进时“英雄机射击周期逐步增加”的机制。
+- 将递进上限由 `22` 收紧为 `18`，避免后期英雄机射速被削弱过多。
+
+### 执行验证
+- 源码编译：
+  - `javac -d /tmp/aircraftwar-build $(find src/edu/hitsz -name "*.java")`
+- 结果：编译通过。
