@@ -1,0 +1,101 @@
+@startuml
+' https://plantuml.com/class-diagram
+
+title Aircraft War - Experiment 1 Class Diagram (Game & Item)
+skinparam classAttributeIconSize 0
+top to bottom direction
+
+package basic {
+  abstract class AbstractFlyingObject {
+      # locationX:int
+      # locationY:int
+      # speedX:int
+      # speedY:int
+      # image:BufferedImage
+      # width:int
+      # height:int
+      # isValid:boolean
+      + AbstractFlyingObject(int locationX, int locationY, int speedX, int speedY)
+      + forward():void
+      + crash(AbstractFlyingObject flyingObject):boolean
+      + vanish():void
+  }
+}
+
+package aircraft {
+  abstract class AbstractAircraft
+
+  class HeroAircraft {
+      - {static} instance:HeroAircraft
+      + {static} getInstance():HeroAircraft
+      + shoot():List<BaseBullet>
+  }
+}
+
+package bullet {
+  abstract class BaseBullet
+}
+
+package item {
+  abstract class AbstractItem {
+      + AbstractItem(int locationX, int locationY, int speedX, int speedY)
+      + forward():void
+      + {abstract} activate(HeroAircraft heroAircraft):void
+  }
+
+  class BloodItem {
+      - {static} RECOVER_HP:int
+      + BloodItem(int locationX, int locationY, int speedX, int speedY)
+      + activate(HeroAircraft heroAircraft):void
+  }
+
+  class FireItem {
+      + FireItem(int locationX, int locationY, int speedX, int speedY)
+      + activate(HeroAircraft heroAircraft):void
+  }
+
+  class SuperFireItem {
+      + SuperFireItem(int locationX, int locationY, int speedX, int speedY)
+      + activate(HeroAircraft heroAircraft):void
+  }
+
+  class BombItem {
+      + BombItem(int locationX, int locationY, int speedX, int speedY)
+      + activate(HeroAircraft heroAircraft):void
+  }
+
+  class FreezeItem {
+      + FreezeItem(int locationX, int locationY, int speedX, int speedY)
+      + activate(HeroAircraft heroAircraft):void
+  }
+}
+
+package application {
+  class Game {
+      - timer:Timer
+      - heroAircraft:HeroAircraft
+      - enemyAircrafts:List<AbstractAircraft>
+      - heroBullets:List<BaseBullet>
+      - enemyBullets:List<BaseBullet>
+      - items:List<AbstractItem>
+      - shootCycle:double
+      - enemyShootCycleFactor:double
+      + action():void
+      + setEnemyShootCycleFactor(double enemyShootCycleFactor):void
+  }
+}
+
+AbstractFlyingObject <|-- AbstractItem
+AbstractItem <|-- BloodItem
+AbstractItem <|-- FireItem
+AbstractItem <|-- SuperFireItem
+AbstractItem <|-- BombItem
+AbstractItem <|-- FreezeItem
+
+Game ..> HeroAircraft : getInstance()
+Game ..> AbstractAircraft : spawn/manage
+Game ..> AbstractItem : drop/manage
+Game ..> BaseBullet : manage
+AbstractItem ..> HeroAircraft : activate()
+
+@enduml
