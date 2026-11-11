@@ -11,11 +11,11 @@ public class HardGame extends Game {
     private static final int UPGRADE_INTERVAL = 250;
 
     public HardGame() {
-        this(new GameSettings(GameDifficulty.HARD, null, false));
+        this(new GameSettings(GameDifficulty.HARD));
     }
 
     public HardGame(GameSettings settings) {
-        super(settings == null ? new GameSettings(GameDifficulty.HARD, null, false) : settings);
+        super(settings == null ? new GameSettings(GameDifficulty.HARD) : settings);
         initializeDifficulty();
         finalizeDifficultyInitialization();
     }

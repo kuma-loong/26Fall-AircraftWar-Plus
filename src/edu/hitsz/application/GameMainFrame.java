@@ -21,7 +21,6 @@ public class GameMainFrame extends JFrame {
     private static final String GAME_CARD = "GAME_PANEL";
     private static final String LEADERBOARD_CARD = "LEADERBOARD";
     private static final String DEFAULT_PLAYER_NAME = "Player";
-    private static final double SCREEN_USAGE_RATIO = 0.9;
 
     private final CardLayout cardLayout;
     private final JPanel mainCardPanel;
@@ -56,7 +55,7 @@ public class GameMainFrame extends JFrame {
      */
     public void startGame(GameSettings settings) {
         GameSettings safeSettings = settings == null
-                ? new GameSettings(GameDifficulty.NORMAL, BackgroundProfile.defaultProfile(), false)
+                ? new GameSettings(GameDifficulty.NORMAL)
                 : settings;
         configureViewport(safeSettings);
         replaceCurrentGame(createGame(safeSettings));
@@ -111,21 +110,7 @@ public class GameMainFrame extends JFrame {
     }
 
     private void configureViewport(GameSettings settings) {
-        BackgroundProfile profile = settings.getBackgroundProfile();
-        if (settings.isUseImageSizeAsViewport() && profile.supportsViewportResize()) {
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            int maxWidth = Math.max(1, (int) Math.floor(screenSize.getWidth() * SCREEN_USAGE_RATIO));
-            int maxHeight = Math.max(1, (int) Math.floor(screenSize.getHeight() * SCREEN_USAGE_RATIO));
-            Dimension fittedSize = GameViewport.fitToBounds(
-                    profile.getWidth(),
-                    profile.getHeight(),
-                    maxWidth,
-                    maxHeight
-            );
-            GameViewport.configure(fittedSize.width, fittedSize.height);
-        } else {
-            GameViewport.reset();
-        }
+        GameViewport.reset();
         applyWindowBounds();
         mainCardPanel.revalidate();
         mainCardPanel.repaint();

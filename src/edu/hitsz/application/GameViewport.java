@@ -4,7 +4,7 @@ import java.awt.Dimension;
 
 /**
  * 运行时游戏视口配置。
- * 统一管理窗口宽高，支持在不改动核心逻辑坐标系接口的前提下切换窗口尺寸。
+ * 统一提供游戏逻辑坐标边界。
  */
 public final class GameViewport {
     private static int width = Main.WINDOW_WIDTH;

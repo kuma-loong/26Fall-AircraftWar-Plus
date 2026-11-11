@@ -11,11 +11,11 @@ public class NormalGame extends Game {
     private static final int UPGRADE_INTERVAL = 300;
 
     public NormalGame() {
-        this(new GameSettings(GameDifficulty.NORMAL, null, false));
+        this(new GameSettings(GameDifficulty.NORMAL));
     }
 
     public NormalGame(GameSettings settings) {
-        super(settings == null ? new GameSettings(GameDifficulty.NORMAL, null, false) : settings);
+        super(settings == null ? new GameSettings(GameDifficulty.NORMAL) : settings);
         initializeDifficulty();
         finalizeDifficultyInitialization();
     }

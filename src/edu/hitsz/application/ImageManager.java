@@ -24,13 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,7 +40,6 @@ public class ImageManager {
      */
     private static final Map<String, BufferedImage> CLASSNAME_IMAGE_MAP = new HashMap<>();
     private static final String IMAGE_DIRECTORY = "src/images/";
-    private static final String CUSTOM_BACKGROUND_DIRECTORY = IMAGE_DIRECTORY + "custom/";
 
     public static BufferedImage BACKGROUND_IMAGE;
     public static BufferedImage HERO_IMAGE;
@@ -114,61 +107,6 @@ public class ImageManager {
     }
 
     /**
-     * 获取开始菜单可选背景列表。
-     * 默认背景始终在首位，其余条目来自自定义目录扫描结果。
-     *
-     * @return 背景配置列表
-     */
-    public static List<BackgroundProfile> getAvailableBackgroundProfiles() {
-        List<BackgroundProfile> profiles = new ArrayList<>();
-        profiles.add(BackgroundProfile.defaultProfile());
-        File directory = getCustomBackgroundDirectory();
-        File[] files = directory.listFiles();
-        if (files == null) {
-            return profiles;
-        }
-        List<BackgroundProfile> customProfiles = new ArrayList<>();
-        for (File file : files) {
-            if (!file.isFile() || !isSupportedBackgroundFile(file.getName())) {
-                continue;
-            }
-            try {
-                BufferedImage image = loadImage(file.getPath());
-                if (image != null) {
-                    customProfiles.add(BackgroundProfile.customProfile(
-                            file.getName(),
-                            file.getPath(),
-                            image.getWidth(),
-                            image.getHeight()
-                    ));
-                }
-            } catch (IOException ignored) {
-                // 损坏图片不加入菜单，避免影响游戏启动。
-            }
-        }
-        customProfiles.sort(Comparator.comparing(BackgroundProfile::getDisplayName, String.CASE_INSENSITIVE_ORDER));
-        profiles.addAll(customProfiles);
-        return profiles;
-    }
-
-    /**
-     * 按启动配置加载背景图。
-     *
-     * @param settings 当前对局设置
-     */
-    public static void applyBackground(GameSettings settings) {
-        if (settings == null || settings.getBackgroundProfile().isDefaultProfile()) {
-            setBackgroundByDifficulty(settings == null ? null : settings.getDifficulty());
-            return;
-        }
-        try {
-            BACKGROUND_IMAGE = scaleToViewport(loadImage(settings.getBackgroundProfile().getImagePath()));
-        } catch (IOException exception) {
-            setBackgroundByDifficulty(settings.getDifficulty());
-        }
-    }
-
-    /**
      * 按难度切换背景图，不改变其他资源加载方式。
      * @param difficulty 当前难度
      */
@@ -188,44 +126,6 @@ public class ImageManager {
                 // 图片资源在静态初始化阶段已校验，此处保底不再退出程序。
             }
         }
-    }
-
-    /**
-     * 将外部图片导入到自定义背景目录。
-     * 若存在同名文件，则自动追加序号避免覆盖。
-     *
-     * @param sourceFile 外部图片文件
-     * @return 导入后的目标文件
-     * @throws IOException 文件复制失败或图片格式不支持
-     */
-    public static File importCustomBackground(File sourceFile) throws IOException {
-        if (sourceFile == null || !sourceFile.isFile() || !isSupportedBackgroundFile(sourceFile.getName())) {
-            throw new IOException("Unsupported background file.");
-        }
-        File customDirectory = getCustomBackgroundDirectory();
-        if (!customDirectory.exists() && !customDirectory.mkdirs()) {
-            throw new IOException("Failed to create custom background directory.");
-        }
-        File targetFile = resolveImportTargetFile(sourceFile.getName(), customDirectory);
-        Files.copy(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        return targetFile;
-    }
-
-    static File resolveImportTargetFile(String fileName, File directory) {
-        if (directory == null) {
-            return new File(fileName);
-        }
-        String safeFileName = fileName == null || fileName.isBlank() ? "background.png" : fileName;
-        int dotIndex = safeFileName.lastIndexOf('.');
-        String baseName = dotIndex > 0 ? safeFileName.substring(0, dotIndex) : safeFileName;
-        String extension = dotIndex > 0 ? safeFileName.substring(dotIndex) : "";
-        File targetFile = new File(directory, safeFileName);
-        int index = 1;
-        while (targetFile.exists()) {
-            targetFile = new File(directory, baseName + "_" + index + extension);
-            index++;
-        }
-        return targetFile;
     }
 
     private static BufferedImage loadImage(String fileName) throws IOException {
@@ -253,17 +153,6 @@ public class ImageManager {
         graphics.drawImage(source, 0, 0, targetWidth, targetHeight, null);
         graphics.dispose();
         return scaledImage;
-    }
-
-    private static boolean isSupportedBackgroundFile(String fileName) {
-        String lowerCaseName = fileName.toLowerCase();
-        return lowerCaseName.endsWith(".png")
-                || lowerCaseName.endsWith(".jpg")
-                || lowerCaseName.endsWith(".jpeg");
-    }
-
-    private static File getCustomBackgroundDirectory() {
-        return Path.of(CUSTOM_BACKGROUND_DIRECTORY).toFile();
     }
 
 }

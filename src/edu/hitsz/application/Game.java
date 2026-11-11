@@ -111,10 +111,10 @@ public abstract class Game extends JPanel {
 
     protected Game(GameSettings settings) {
         GameSettings safeSettings = settings == null
-                ? new GameSettings(GameDifficulty.NORMAL, BackgroundProfile.defaultProfile(), false)
+                ? new GameSettings(GameDifficulty.NORMAL)
                 : settings;
         this.difficulty = safeSettings.getDifficulty();
-        ImageManager.applyBackground(safeSettings);
+        ImageManager.setBackgroundByDifficulty(safeSettings.getDifficulty());
         this.heroAircraft = HeroAircraft.getInstance();
         this.heroAircraft.prepareForNewGame();
         this.enemyAircrafts = new LinkedList<>();

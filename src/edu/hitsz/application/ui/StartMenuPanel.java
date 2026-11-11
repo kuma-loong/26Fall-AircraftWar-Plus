@@ -2,24 +2,16 @@ package edu.hitsz.application.ui;
 
 import edu.hitsz.application.GameMainFrame;
 import edu.hitsz.application.GameSettings;
-import edu.hitsz.application.BackgroundProfile;
-import edu.hitsz.application.ImageManager;
 import edu.hitsz.dao.GameDifficulty;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 /**
  * 游戏开始菜单面板
  */
 public class StartMenuPanel extends JPanel {
     private final GameMainFrame mainFrame;
-    private final JComboBox<BackgroundProfile> backgroundSelector;
-    private final JCheckBox autoViewportCheckBox;
 
     public StartMenuPanel(GameMainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -33,35 +25,13 @@ public class StartMenuPanel extends JPanel {
         JButton btnEasy = createMenuButton("简单模式");
         JButton btnNormal = createMenuButton("普通模式");
         JButton btnHard = createMenuButton("困难模式");
-        JButton importBackgroundBtn = createMenuButton("导入背景图片");
-        JButton refreshBackgroundBtn = createMenuButton("刷新背景列表");
-        backgroundSelector = new JComboBox<>();
-        autoViewportCheckBox = new JCheckBox("按图片尺寸启动窗口");
-        autoViewportCheckBox.setOpaque(false);
-        autoViewportCheckBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-        autoViewportCheckBox.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        backgroundSelector.setAlignmentX(Component.CENTER_ALIGNMENT);
-        backgroundSelector.setMaximumSize(new Dimension(280, 36));
-        refreshBackgroundProfiles();
-
         // 绑定事件
         btnEasy.addActionListener(e -> mainFrame.startGame(buildSettings(GameDifficulty.EASY)));
         btnNormal.addActionListener(e -> mainFrame.startGame(buildSettings(GameDifficulty.NORMAL)));
         btnHard.addActionListener(e -> mainFrame.startGame(buildSettings(GameDifficulty.HARD)));
-        importBackgroundBtn.addActionListener(e -> importBackgroundImage());
-        refreshBackgroundBtn.addActionListener(e -> refreshBackgroundProfiles());
 
         // 居中添加按钮，并设置间距
         buttonPanel.add(Box.createVerticalGlue());
-        buttonPanel.add(createSectionLabel("背景设置"));
-        buttonPanel.add(backgroundSelector);
-        buttonPanel.add(Box.createVerticalStrut(12));
-        buttonPanel.add(autoViewportCheckBox);
-        buttonPanel.add(Box.createVerticalStrut(12));
-        buttonPanel.add(importBackgroundBtn);
-        buttonPanel.add(Box.createVerticalStrut(12));
-        buttonPanel.add(refreshBackgroundBtn);
-        buttonPanel.add(Box.createVerticalStrut(28));
         buttonPanel.add(createSectionLabel("选择难度"));
         buttonPanel.add(Box.createVerticalStrut(12));
         buttonPanel.add(btnEasy);
@@ -91,54 +61,6 @@ public class StartMenuPanel extends JPanel {
     }
 
     private GameSettings buildSettings(GameDifficulty difficulty) {
-        BackgroundProfile profile = (BackgroundProfile) backgroundSelector.getSelectedItem();
-        return new GameSettings(difficulty, profile, autoViewportCheckBox.isSelected());
-    }
-
-    private void refreshBackgroundProfiles() {
-        BackgroundProfile previousSelection = (BackgroundProfile) backgroundSelector.getSelectedItem();
-        DefaultComboBoxModel<BackgroundProfile> model = new DefaultComboBoxModel<>();
-        List<BackgroundProfile> profiles = ImageManager.getAvailableBackgroundProfiles();
-        for (BackgroundProfile profile : profiles) {
-            model.addElement(profile);
-        }
-        backgroundSelector.setModel(model);
-        if (previousSelection != null) {
-            model.setSelectedItem(previousSelection);
-        }
-    }
-
-    private void importBackgroundImage() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("选择背景图片");
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Image Files", "png", "jpg", "jpeg"));
-        int selection = fileChooser.showOpenDialog(this);
-        if (selection != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-        File selectedFile = fileChooser.getSelectedFile();
-        try {
-            File importedFile = ImageManager.importCustomBackground(selectedFile);
-            refreshBackgroundProfiles();
-            selectImportedBackground(importedFile.getName());
-        } catch (IOException exception) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "导入背景失败，请确认文件格式正确且可读取。",
-                    "导入失败",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
-    private void selectImportedBackground(String importedFileName) {
-        ComboBoxModel<BackgroundProfile> model = backgroundSelector.getModel();
-        for (int i = 0; i < model.getSize(); i++) {
-            BackgroundProfile profile = model.getElementAt(i);
-            if (profile != null && importedFileName.equals(profile.getDisplayName())) {
-                backgroundSelector.setSelectedItem(profile);
-                return;
-            }
-        }
+        return new GameSettings(difficulty);
     }
 }
