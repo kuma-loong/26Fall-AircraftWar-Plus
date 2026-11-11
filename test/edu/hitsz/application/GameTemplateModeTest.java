@@ -27,7 +27,7 @@ class GameTemplateModeTest {
         EasyGame game = new EasyGame();
         HeroAircraft.getInstance().prepareForNewGame();
         HeroAircraft.getInstance().setLocation(256, 1500);
-        game.debugSetScore(10_000);
+        ((Game) game).debugSetScore(10_000);
 
         runFrames(game, 120);
 
@@ -89,22 +89,22 @@ class GameTemplateModeTest {
         NormalGame normalGame = new NormalGame();
         HardGame hardGame = new HardGame();
 
-        normalGame.debugForceSpawnBoss();
+        ((Game) normalGame).debugForceSpawnBoss();
         BossEnemy normalBossFirst = findBoss(normalGame);
         int normalBossHpFirst = normalBossFirst.getHp();
         normalBossFirst.vanish();
-        normalGame.debugPostProcess();
-        normalGame.debugForceSpawnBoss();
+        ((Game) normalGame).debugPostProcess();
+        ((Game) normalGame).debugForceSpawnBoss();
         BossEnemy normalBossSecond = findBoss(normalGame);
         int normalBossHpSecond = normalBossSecond.getHp();
         assertEquals(normalBossHpFirst, normalBossHpSecond);
 
-        hardGame.debugForceSpawnBoss();
+        ((Game) hardGame).debugForceSpawnBoss();
         BossEnemy hardBossFirst = findBoss(hardGame);
         int hardBossHpFirst = hardBossFirst.getHp();
         hardBossFirst.vanish();
-        hardGame.debugPostProcess();
-        hardGame.debugForceSpawnBoss();
+        ((Game) hardGame).debugPostProcess();
+        ((Game) hardGame).debugForceSpawnBoss();
         BossEnemy hardBossSecond = findBoss(hardGame);
         int hardBossHpSecond = hardBossSecond.getHp();
         assertEquals(hardBossHpFirst + 50, hardBossHpSecond);
@@ -119,7 +119,7 @@ class GameTemplateModeTest {
         game.getEnemyAircrafts().add(new edu.hitsz.aircraft.ElitePlusEnemy(120, 120, 2, 7, 60));
         int scoreBefore = game.getScore();
 
-        game.debugActivateItem(new BombItem(100, 100, 0, 0));
+        ((Game) game).debugActivateItem(new BombItem(100, 100, 0, 0));
 
         assertEquals(scoreBefore + 30, game.getScore());
         assertTrue(game.getItems().isEmpty());
@@ -131,7 +131,7 @@ class GameTemplateModeTest {
         HardGame hardGame = new HardGame();
         MobEnemy mobEnemy = new MobEnemy(100, 100, 0, 10, 30);
 
-        hardGame.debugConfigureEnemyOnSpawn(mobEnemy);
+        ((Game) hardGame).debugConfigureEnemyOnSpawn(mobEnemy);
 
         assertEquals(30, mobEnemy.getHp());
     }
@@ -149,12 +149,12 @@ class GameTemplateModeTest {
     void shouldApplyComboBonusScoreAfterHeroHits() {
         NormalGame game = new NormalGame();
         for (int i = 0; i < 4; i++) {
-            game.debugRegisterHeroBulletHit();
+            ((Game) game).debugRegisterHeroBulletHit();
             game.action();
         }
         int scoreBefore = game.getScore();
-        game.debugRegisterHeroBulletHit();
-        game.debugRegisterEnemyDestroyed(10);
+        ((Game) game).debugRegisterHeroBulletHit();
+        ((Game) game).debugRegisterEnemyDestroyed(10);
 
         assertEquals(scoreBefore + 12, game.getScore());
     }
@@ -168,10 +168,10 @@ class GameTemplateModeTest {
         heroAircraft.resetHp(100);
 
         for (int i = 0; i < 4; i++) {
-            game.debugRegisterHeroBulletHit();
+            ((Game) game).debugRegisterHeroBulletHit();
             game.action();
         }
-        assertEquals(4, game.getComboCount());
+        assertEquals(4, ((Game) game).getComboCount());
 
         game.getEnemyBullets().add(new EnemyBullet(
                 heroAircraft.getLocationX(),
@@ -181,13 +181,13 @@ class GameTemplateModeTest {
                 1
         ));
         game.action();
-        assertEquals(4, game.getComboCount());
+        assertEquals(4, ((Game) game).getComboCount());
 
-        game.debugRegisterHeroBulletHit();
+        ((Game) game).debugRegisterHeroBulletHit();
         int scoreBefore = game.getScore();
-        game.debugRegisterEnemyDestroyed(10);
+        ((Game) game).debugRegisterEnemyDestroyed(10);
 
-        assertEquals(5, game.getComboCount());
+        assertEquals(5, ((Game) game).getComboCount());
         assertEquals(scoreBefore + 12, game.getScore());
     }
 
@@ -201,19 +201,19 @@ class GameTemplateModeTest {
         heroAircraft.decreaseHp(30);
 
         for (int i = 0; i < 10; i++) {
-            game.debugRegisterHeroBulletHit();
+            ((Game) game).debugRegisterHeroBulletHit();
             game.action();
         }
 
-        assertEquals(10, game.getComboCount());
+        assertEquals(10, ((Game) game).getComboCount());
         assertEquals(80, heroAircraft.getHp());
     }
 
     private void verifyComboEnabled(Game game) {
-        game.debugRegisterHeroBulletHit();
+        ((Game) game).debugRegisterHeroBulletHit();
         game.action();
-        game.debugRegisterHeroBulletHit();
-        assertEquals(2, game.getComboCount());
+        ((Game) game).debugRegisterHeroBulletHit();
+        assertEquals(2, ((Game) game).getComboCount());
     }
 
     private void runFrames(Game game, int frameCount) {
